@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Callable
 
 from docx.enum.dml import MSO_THEME_COLOR
 from docx.enum.text import WD_COLOR_INDEX, WD_UNDERLINE
-from docx.oxml.ns import nsdecls
+from docx.oxml.ns import nsdecls, qn
 from docx.oxml.parser import parse_xml
 from docx.oxml.simpletypes import (
     ST_HexColor,
@@ -154,10 +154,12 @@ class CT_RPr(BaseOxmlElement):
     def highlight_val(self) -> WD_COLOR_INDEX | None:
         """Value of `./w:highlight/@val`.
 
-        Specifies font's highlight color, or `None` if the text is not highlighted.
+        Specifies font's highlight color, or `None` if the text is not highlighted. Word
+        writes `w:val="none"` when a highlight is explicitly cleared; that also reads as
+        `None` rather than raising, since `WD_COLOR_INDEX` has no member for it.
         """
         highlight = self.highlight
-        if highlight is None:
+        if highlight is None or highlight.get(qn("w:val")) == "none":
             return None
         return highlight.val
 
