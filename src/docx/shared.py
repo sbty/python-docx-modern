@@ -231,15 +231,18 @@ class lazyproperty(Generic[T]):
             return self  # type: ignore
 
         # --- when accessed on instance, start by checking instance __dict__ for
-        # --- item with key matching the wrapped function's name
-        value = obj.__dict__.get(self._name)
-        if value is None:
+        # --- item with key matching the wrapped function's name. A missing key, not a
+        # --- `None` value, marks first access, so a getter that legitimately returns
+        # --- `None` is still evaluated only once. EAFP keeps the cached path to a
+        # --- single dict lookup.
+        try:
+            return cast(T, obj.__dict__[self._name])
+        except KeyError:
             # --- on first access, the __dict__ item will be absent. Evaluate fget()
             # --- and store that value in the (otherwise unused) host-object
             # --- __dict__ value of same name ('fget' nominally)
-            value = self._fget(obj)
-            obj.__dict__[self._name] = value
-        return cast(T, value)
+            value = obj.__dict__[self._name] = self._fget(obj)
+            return cast(T, value)
 
     def __set__(self, obj: Any, value: Any) -> None:
         """Raises unconditionally, to preserve read-only behavior.

@@ -5,7 +5,18 @@ from __future__ import annotations
 import pytest
 
 from docx.opc.part import XmlPart
-from docx.shared import Cm, ElementProxy, Emu, Inches, Length, Mm, Pt, RGBColor, Twips
+from docx.shared import (
+    Cm,
+    ElementProxy,
+    Emu,
+    Inches,
+    Length,
+    Mm,
+    Pt,
+    RGBColor,
+    Twips,
+    lazyproperty,
+)
 
 from .unitutil.cxml import element
 from .unitutil.mock import FixtureRequest, Mock, instance_mock
@@ -48,6 +59,27 @@ class DescribeElementProxy:
     @pytest.fixture
     def part_(self, request: FixtureRequest):
         return instance_mock(request, XmlPart)
+
+
+class DescribeLazyproperty:
+    """Unit-test suite for `docx.shared.lazyproperty`."""
+
+    # -- `None` is a legitimate getter result and must be cached like any other (#1600) --
+    @pytest.mark.parametrize("value", ["foobar", None])
+    def it_evaluates_the_getter_only_once(self, value: str | None):
+        class Obj:
+            fget_call_count = 0
+
+            @lazyproperty
+            def fget(self) -> str | None:
+                Obj.fget_call_count += 1
+                return value
+
+        obj = Obj()
+
+        assert obj.fget is value
+        assert obj.fget is value
+        assert Obj.fget_call_count == 1
 
 
 class DescribeLength:
