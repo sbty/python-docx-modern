@@ -132,7 +132,12 @@ class Font(ElementProxy):
 
     @property
     def highlight_color(self) -> WD_COLOR_INDEX | None:
-        """Color of highlighing applied or |None| if not highlighted."""
+        """Color of highlighing applied or |None| if not highlighted.
+
+        |None| is returned both when no highlight is applied directly to this run (so the
+        style hierarchy determines it) and when highlighting is explicitly turned off
+        (`w:val="none"`); this property does not distinguish the two.
+        """
         rPr = self._element.rPr
         if rPr is None:
             return None
