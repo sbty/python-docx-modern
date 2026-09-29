@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "python-docx"
@@ -13,16 +13,15 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Office/Business :: Office Suites",
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "lxml>=3.1.0",
+    "lxml>=4.9.0",
     "typing_extensions>=4.9.0",
 ]
 description = "Create, read, and update Microsoft Word .docx files."
@@ -30,7 +29,7 @@ dynamic = ["version"]
 keywords = ["docx", "office", "openxml", "word"]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [dependency-groups]
 dev = [
@@ -39,6 +38,7 @@ dev = [
     "Sphinx==1.8.6",
     "alabaster<0.7.14",
     "behave>=1.2.6",
+    "mypy>=1.16.0",
     "pyparsing>=3.2.3",
     "pyright>=1.1.401",
     "pytest>=8.4.0",
@@ -57,7 +57,7 @@ Repository = "https://github.com/python-openxml/python-docx"
 [tool.pyright]
 include = ["src/docx", "tests"]
 pythonPlatform = "All"
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 reportImportCycles = false
 reportUnnecessaryCast = true
 reportUnnecessaryTypeIgnoreComment = true
@@ -96,7 +96,7 @@ python_functions = ["it_", "its_", "they_", "and_", "but_"]
 [tool.ruff]
 exclude = []
 line-length = 100
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 ignore = [
@@ -116,12 +116,55 @@ select = [
     "UP018",    # -- Unnecessary {literal_type} call like `str("abc")`. (rewrite as a literal) --
     "UP032",    # -- Use f-string instead of `.format()` call --
     "UP034",    # -- Avoid extraneous parentheses --
+    "W",        # -- pycodestyle warnings --
+    # -- stricter rules, enforced only on modules already migrated (see per-file-ignores) --
+    "ANN",      # -- flake8-annotations --
+    "B",        # -- flake8-bugbear --
+    "UP",       # -- pyupgrade --
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# -- Ratchet: modules not yet modernized are exempt from the stricter rules. Add a module to
+# -- this brace-list (and to the mypy override below) once it passes them.
+"!src/docx/{text/paragraph}.py" = ["ANN", "B", "UP"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["docx"]
 known-local-folder = ["helpers"]
 
-[tool.setuptools.dynamic]
-version = {attr = "docx.__version__"}
+[tool.hatch.version]
+path = "src/docx/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/features",
+    "/docs",
+    "/HISTORY.rst",
+    "/tox.ini",
+    "/requirements*.txt",
+]
+exclude = ["/docs/.build"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/docx"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+mypy_path = "src:typings"
+files = ["src/docx"]
+
+[[tool.mypy.overrides]]
+# -- Ratchet: errors are ignored in modules not yet modernized. List each module here once it
+# -- passes `mypy --strict`; keep it in sync with the ruff per-file-ignores above.
+module = ["docx.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["docx.text.paragraph"]
+ignore_errors = false
 

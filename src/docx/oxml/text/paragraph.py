@@ -45,11 +45,11 @@ class CT_P(BaseOxmlElement):
         return pPr.jc_val
 
     @alignment.setter
-    def alignment(self, value: WD_PARAGRAPH_ALIGNMENT):
+    def alignment(self, value: WD_PARAGRAPH_ALIGNMENT | None) -> None:
         pPr = self.get_or_add_pPr()
         pPr.jc_val = value
 
-    def clear_content(self):
+    def clear_content(self) -> None:
         """Remove all child elements, except the `<w:pPr>` element if present."""
         for child in self.xpath("./*[not(self::w:pPr)]"):
             self.remove(child)
@@ -93,7 +93,7 @@ class CT_P(BaseOxmlElement):
         pPr.style = style
 
     @property
-    def text(self):  # pyright: ignore[reportIncompatibleMethodOverride]
+    def text(self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """The textual content of this paragraph.
 
         Inner-content child elements like `w:r` and `w:hyperlink` are translated to

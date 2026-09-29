@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator, List, cast
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, cast
 
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.text.run import CT_R
@@ -23,8 +24,8 @@ if TYPE_CHECKING:
 class Paragraph(StoryChild):
     """Proxy object wrapping a `<w:p>` element."""
 
-    def __init__(self, p: CT_P, parent: t.ProvidesStoryPart):
-        super(Paragraph, self).__init__(parent)
+    def __init__(self, p: CT_P, parent: t.ProvidesStoryPart) -> None:
+        super().__init__(parent)
         self._p = self._element = p
 
     def add_run(self, text: str | None = None, style: str | CharacterStyle | None = None) -> Run:
@@ -55,10 +56,10 @@ class Paragraph(StoryChild):
         return self._p.alignment
 
     @alignment.setter
-    def alignment(self, value: WD_PARAGRAPH_ALIGNMENT):
+    def alignment(self, value: WD_PARAGRAPH_ALIGNMENT | None) -> None:
         self._p.alignment = value
 
-    def clear(self):
+    def clear(self) -> Paragraph:
         """Return this same paragraph after removing all its content.
 
         Paragraph-level formatting, such as style, is preserved.
@@ -72,7 +73,7 @@ class Paragraph(StoryChild):
         return bool(self._p.lastRenderedPageBreaks)
 
     @property
-    def hyperlinks(self) -> List[Hyperlink]:
+    def hyperlinks(self) -> list[Hyperlink]:
         """A |Hyperlink| instance for each hyperlink in this paragraph."""
         return [Hyperlink(hyperlink, self) for hyperlink in self._p.hyperlink_lst]
 
@@ -107,13 +108,13 @@ class Paragraph(StoryChild):
             )
 
     @property
-    def paragraph_format(self):
+    def paragraph_format(self) -> ParagraphFormat:
         """The |ParagraphFormat| object providing access to the formatting properties
         for this paragraph, such as line spacing and indentation."""
         return ParagraphFormat(self._element)
 
     @property
-    def rendered_page_breaks(self) -> List[RenderedPageBreak]:
+    def rendered_page_breaks(self) -> list[RenderedPageBreak]:
         """All rendered page-breaks in this paragraph.
 
         Most often an empty list, sometimes contains one page-break, but can contain
@@ -122,7 +123,7 @@ class Paragraph(StoryChild):
         return [RenderedPageBreak(lrpb, self) for lrpb in self._p.lastRenderedPageBreaks]
 
     @property
-    def runs(self) -> List[Run]:
+    def runs(self) -> list[Run]:
         """Sequence of |Run| instances corresponding to the <w:r> elements in this
         paragraph."""
         return [Run(r, self) for r in self._p.r_lst]
@@ -142,7 +143,7 @@ class Paragraph(StoryChild):
         return cast(ParagraphStyle, style)
 
     @style.setter
-    def style(self, style_or_name: str | ParagraphStyle | None):
+    def style(self, style_or_name: str | ParagraphStyle | None) -> None:
         style_id = self.part.get_style_id(style_or_name, WD_STYLE_TYPE.PARAGRAPH)
         self._p.style = style_id
 
@@ -163,11 +164,11 @@ class Paragraph(StoryChild):
         return self._p.text
 
     @text.setter
-    def text(self, text: str | None):
+    def text(self, text: str | None) -> None:
         self.clear()
         self.add_run(text)
 
-    def _insert_paragraph_before(self):
+    def _insert_paragraph_before(self) -> Paragraph:
         """Return a newly created paragraph, inserted directly before this paragraph."""
         p = self._p.add_p_before()
         return Paragraph(p, self._parent)
