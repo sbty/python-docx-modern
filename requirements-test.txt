@@ -5,4 +5,4 @@ pytest>=2.5
 pytest-coverage
 pytest-xdist
 ruff
-mypy
+mypy>=1.16.0
