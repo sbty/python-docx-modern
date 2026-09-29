@@ -3,6 +3,16 @@
 Release History
 ---------------
 
+Unreleased (python-docx-modern fork)
+++++++++++++++++++++++++++++++++++++
+
+- Fix #1559 Read `w:highlight w:val="none"` as `None` instead of raising ValueError
+- Fix #1600 `lazyproperty` caches a `None` getter result instead of re-evaluating
+  on every access
+- Require Python 3.10+; lower lxml minimum to 4.9.0
+- Build with hatchling instead of setuptools; add mypy strict checking for
+  migrated modules
+
 1.2.0 (2025-06-16)
 ++++++++++++++++++
 
