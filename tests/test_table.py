@@ -188,7 +188,9 @@ class DescribeTable:
         self, tbl_cxml: str, expected_value: WD_TABLE_DIRECTION | None, document_: Mock
     ):
         tbl = cast(CT_Tbl, element(tbl_cxml))
-        assert Table(tbl, document_).table_direction == expected_value
+        # -- identity, not equality: the bool from `w:bidiVisual` compares equal to the enum
+        # -- member (RTL == 1 == True), which hid the getter returning a bool --
+        assert Table(tbl, document_).table_direction is expected_value
 
     @pytest.mark.parametrize(
         ("tbl_cxml", "new_value", "expected_cxml"),

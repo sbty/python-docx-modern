@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, TypeAlias, cast, overload
 
 from docx.blkcntnr import BlockItemContainer
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_DIRECTION
 from docx.oxml.simpletypes import ST_Merge
 from docx.oxml.table import CT_TblGridCol
 from docx.shared import Inches, Parented, StoryChild, lazyproperty
 
 if TYPE_CHECKING:
     import docx.types as t
-    from docx.enum.table import WD_ROW_HEIGHT_RULE, WD_TABLE_ALIGNMENT, WD_TABLE_DIRECTION
+    from docx.enum.table import WD_ROW_HEIGHT_RULE, WD_TABLE_ALIGNMENT
     from docx.oxml.table import CT_Row, CT_Tbl, CT_TblPr, CT_Tc
     from docx.shared import Length
     from docx.styles.style import (
@@ -154,7 +154,11 @@ class Table(StoryChild):
         For example: `WD_TABLE_DIRECTION.LTR`. |None| indicates the value is inherited
         from the style hierarchy.
         """
-        return cast("WD_TABLE_DIRECTION | None", self._tbl.bidiVisual_val)
+        # -- `w:bidiVisual` is an on/off flag; map it to the enum member it stands for --
+        bidi_visual = self._tbl.bidiVisual_val
+        if bidi_visual is None:
+            return None
+        return WD_TABLE_DIRECTION.RTL if bidi_visual else WD_TABLE_DIRECTION.LTR
 
     @table_direction.setter
     def table_direction(self, value: WD_TABLE_DIRECTION | None) -> None:

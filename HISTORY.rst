@@ -20,6 +20,7 @@ Unreleased (python-docx-modern fork)
 - Fix #1609 Adding a comment, a comment paragraph or a comment reference range defines
   the "CommentReference" and "CommentText" styles the markup refers to when the
   document lacks them
+- Fix `Table.table_direction` returning a bool instead of a `WD_TABLE_DIRECTION` member
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged
