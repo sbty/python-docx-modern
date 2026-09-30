@@ -13,8 +13,8 @@ from docx.oxml.simpletypes import (
     ST_Merge,
     ST_TblLayoutType,
     ST_TblWidth,
+    ST_TblWidthTwips,
     ST_TwipsMeasure,
-    XsdInt,
 )
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.xmlchemy import (
@@ -400,9 +400,11 @@ class CT_TblWidth(BaseOxmlElement):
     """Used for `w:tblW` and `w:tcW` and others, specifies a table-related width."""
 
     # the type for `w` attr is actually ST_MeasurementOrPercent, but using
-    # XsdInt for now because only dxa (twips) values are being used. It's not
+    # ST_TblWidthTwips for now because only dxa (twips) values are being used. It's not
     # entirely clear what the semantics are for other values like -01.4mm
-    w: int = RequiredAttribute("w:w", XsdInt)  # pyright: ignore[reportAssignmentType]
+    w: int = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:w", ST_TblWidthTwips
+    )
     type = RequiredAttribute("w:type", ST_TblWidth)
 
     @property

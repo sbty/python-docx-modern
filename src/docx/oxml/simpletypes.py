@@ -394,6 +394,19 @@ class ST_TblWidth(XsdString):
             raise ValueError("must be one of %s, got '%s'" % (valid_values, value))
 
 
+class ST_TblWidthTwips(XsdInt):
+    """Integer value of `w:w` in `w:tcW` (the `CT_TblWidth` elements), read as twips.
+
+    The schema type is actually ST_MeasurementOrPercent, but only `dxa` (twips) values
+    are interpreted. Fractional twips, which some producers write, are rounded to the
+    nearest twip rather than raising.
+    """
+
+    @classmethod
+    def convert_from_xml(cls, str_value: str) -> int:
+        return int(round(float(str_value)))
+
+
 class ST_TwipsMeasure(XsdUnsignedLong):
     @classmethod
     def convert_from_xml(cls, str_value: str) -> Length:

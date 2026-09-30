@@ -425,6 +425,8 @@ class Describe_Cell:
             ("w:tc/w:tcPr", None),
             ("w:tc/w:tcPr/w:tcW{w:w=25%,w:type=pct}", None),
             ("w:tc/w:tcPr/w:tcW{w:w=1440,w:type=dxa}", 914400),
+            # -- some producers write fractional twips; round to nearest --
+            ("w:tc/w:tcPr/w:tcW{w:w=1440.6,w:type=dxa}", 915035),
         ],
     )
     def it_knows_its_width_in_EMU(self, tc_cxml: str, expected_value: int | None, parent_: Mock):
