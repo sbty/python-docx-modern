@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from docx.shared import Parented
+from docx.shared import StoryChild
 from docx.text.run import Run
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from docx.oxml.text.hyperlink import CT_Hyperlink
 
 
-class Hyperlink(Parented):
+class Hyperlink(StoryChild):
     """Proxy object wrapping a `<w:hyperlink>` element.
 
     A hyperlink occurs as a child of a paragraph, at the same level as a Run. A
@@ -25,7 +25,7 @@ class Hyperlink(Parented):
     stored.
     """
 
-    def __init__(self, hyperlink: CT_Hyperlink, parent: t.ProvidesStoryPart):
+    def __init__(self, hyperlink: CT_Hyperlink, parent: t.ProvidesStoryPart) -> None:
         super().__init__(parent)
         self._parent = parent
         self._hyperlink = self._element = hyperlink

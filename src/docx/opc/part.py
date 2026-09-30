@@ -143,7 +143,7 @@ class Part:
         return self.rels.related_parts
 
     @lazyproperty
-    def rels(self):
+    def rels(self) -> Relationships:
         """|Relationships| instance holding the relationships for this part."""
         # -- prevent breakage in `python-docx-template` by retaining legacy `._rels` attribute --
         self._rels = Relationships(self._partname.baseURI)
