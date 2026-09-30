@@ -395,7 +395,9 @@ class CT_TabStops(BaseOxmlElement):
 
     tab = OneOrMore("w:tab", successors=())
 
-    def insert_tab_in_order(self, pos, align, leader):
+    def insert_tab_in_order(
+        self, pos: Length, align: WD_TAB_ALIGNMENT, leader: WD_TAB_LEADER | None
+    ) -> CT_TabStop:
         """Insert a newly created `w:tab` child element in `pos` order."""
         new_tab = self._new_tab()
         new_tab.pos, new_tab.val, new_tab.leader = pos, align, leader

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, cast
 
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.shared import ElementProxy
 
 if TYPE_CHECKING:
-    from docx.oxml.text.parfmt import CT_PPr
+    from docx.oxml.text.parfmt import CT_PPr, CT_TabStop, CT_TabStops
+    from docx.shared import Length
 
 
 class TabStops(ElementProxy):
@@ -21,10 +23,10 @@ class TabStops(ElementProxy):
     """
 
     def __init__(self, element: CT_PPr) -> None:
-        super(TabStops, self).__init__(element, None)
+        super().__init__(element, None)
         self._pPr = element
 
-    def __delitem__(self, idx):
+    def __delitem__(self, idx: int) -> None:
         """Remove the tab at offset `idx` in this sequence."""
         tabs = self._pPr.tabs
         if tabs is None:
@@ -32,12 +34,12 @@ class TabStops(ElementProxy):
         try:
             tabs.remove(tabs[idx])
         except IndexError:
-            raise IndexError("tab index out of range")
+            raise IndexError("tab index out of range") from None
 
         if len(tabs) == 0:
             self._pPr.remove(tabs)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> TabStop:
         """Enables list-style access by index."""
         tabs = self._pPr.tabs
         if tabs is None:
@@ -45,7 +47,7 @@ class TabStops(ElementProxy):
         tab = tabs.tab_lst[idx]
         return TabStop(tab)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[TabStop]:
         """Generate a TabStop object for each of the w:tab elements, in XML document
         order."""
         tabs = self._pPr.tabs
@@ -53,13 +55,18 @@ class TabStops(ElementProxy):
             for tab in tabs.tab_lst:
                 yield TabStop(tab)
 
-    def __len__(self):
+    def __len__(self) -> int:
         tabs = self._pPr.tabs
         if tabs is None:
             return 0
         return len(tabs.tab_lst)
 
-    def add_tab_stop(self, position, alignment=WD_TAB_ALIGNMENT.LEFT, leader=WD_TAB_LEADER.SPACES):
+    def add_tab_stop(
+        self,
+        position: Length,
+        alignment: WD_TAB_ALIGNMENT = WD_TAB_ALIGNMENT.LEFT,
+        leader: WD_TAB_LEADER | None = WD_TAB_LEADER.SPACES,
+    ) -> TabStop:
         """Add a new tab stop at `position`, a |Length| object specifying the location
         of the tab stop relative to the paragraph edge.
 
@@ -73,7 +80,7 @@ class TabStops(ElementProxy):
         tab = tabs.insert_tab_in_order(position, alignment, leader)
         return TabStop(tab)
 
-    def clear_all(self):
+    def clear_all(self) -> None:
         """Remove all custom tab stops."""
         self._pPr._remove_tabs()  # pyright: ignore[reportPrivateUsage]
 
@@ -84,12 +91,12 @@ class TabStop(ElementProxy):
     Accessed using list semantics on its containing |TabStops| object.
     """
 
-    def __init__(self, element):
-        super(TabStop, self).__init__(element, None)
+    def __init__(self, element: CT_TabStop) -> None:
+        super().__init__(element, None)
         self._tab = element
 
     @property
-    def alignment(self):
+    def alignment(self) -> WD_TAB_ALIGNMENT:
         """A member of :ref:`WdTabAlignment` specifying the alignment setting for this
         tab stop.
 
@@ -98,11 +105,11 @@ class TabStop(ElementProxy):
         return self._tab.val
 
     @alignment.setter
-    def alignment(self, value):
+    def alignment(self, value: WD_TAB_ALIGNMENT) -> None:
         self._tab.val = value
 
     @property
-    def leader(self):
+    def leader(self) -> WD_TAB_LEADER | None:
         """A member of :ref:`WdTabLeader` specifying a repeating character used as a
         "leader", filling in the space spanned by this tab.
 
@@ -112,11 +119,11 @@ class TabStop(ElementProxy):
         return self._tab.leader
 
     @leader.setter
-    def leader(self, value):
+    def leader(self, value: WD_TAB_LEADER | None) -> None:
         self._tab.leader = value
 
     @property
-    def position(self):
+    def position(self) -> Length:
         """A |Length| object representing the distance of this tab stop from the inside
         edge of the paragraph.
 
@@ -125,8 +132,8 @@ class TabStop(ElementProxy):
         return self._tab.pos
 
     @position.setter
-    def position(self, value):
+    def position(self, value: Length) -> None:
         tab = self._tab
-        tabs = tab.getparent()
+        tabs = cast("CT_TabStops", tab.getparent())
         self._tab = tabs.insert_tab_in_order(value, tab.val, tab.leader)
         tabs.remove(tab)

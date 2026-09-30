@@ -128,7 +128,7 @@ select = [
 # -- this brace-list (and to the mypy override below) once it passes them. Only the UP codes
 # -- that unmigrated code currently violates are listed, so UP015/UP018/UP032/UP034 stay
 # -- enforced everywhere, as before.
-"!src/docx/{text/font,text/paragraph,text/parfmt,text/run}.py" = [
+"!src/docx/{text/font,text/paragraph,text/parfmt,text/run,text/tabstops}.py" = [
     "ANN",
     "B",
     "UP006",
@@ -179,6 +179,12 @@ module = ["docx.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["docx.text.font", "docx.text.paragraph", "docx.text.parfmt", "docx.text.run"]
+module = [
+    "docx.text.font",
+    "docx.text.paragraph",
+    "docx.text.parfmt",
+    "docx.text.run",
+    "docx.text.tabstops",
+]
 ignore_errors = false
 

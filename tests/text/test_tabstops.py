@@ -5,7 +5,7 @@ from typing import cast
 import pytest
 
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
-from docx.oxml.text.parfmt import CT_PPr
+from docx.oxml.text.parfmt import CT_PPr, CT_TabStop
 from docx.shared import Twips
 from docx.text.tabstops import TabStop, TabStops
 
@@ -52,7 +52,7 @@ class DescribeTabStop:
     )
     def alignment_get_fixture(self, request):
         tab_stop_cxml, member = request.param
-        tab_stop = TabStop(element(tab_stop_cxml))
+        tab_stop = TabStop(cast(CT_TabStop, element(tab_stop_cxml)))
         expected_value = getattr(WD_TAB_ALIGNMENT, member)
         return tab_stop, expected_value
 
@@ -64,7 +64,7 @@ class DescribeTabStop:
     )
     def alignment_set_fixture(self, request):
         tab_stop_cxml, member, expected_cxml = request.param
-        tab_stop = TabStop(element(tab_stop_cxml))
+        tab_stop = TabStop(cast(CT_TabStop, element(tab_stop_cxml)))
         expected_xml = xml(expected_cxml)
         value = getattr(WD_TAB_ALIGNMENT, member)
         return tab_stop, value, expected_xml
@@ -78,7 +78,7 @@ class DescribeTabStop:
     )
     def leader_get_fixture(self, request):
         tab_stop_cxml, member = request.param
-        tab_stop = TabStop(element(tab_stop_cxml))
+        tab_stop = TabStop(cast(CT_TabStop, element(tab_stop_cxml)))
         expected_value = getattr(WD_TAB_LEADER, member)
         return tab_stop, expected_value
 
@@ -94,14 +94,14 @@ class DescribeTabStop:
     )
     def leader_set_fixture(self, request):
         tab_stop_cxml, new_value, expected_cxml = request.param
-        tab_stop = TabStop(element(tab_stop_cxml))
+        tab_stop = TabStop(cast(CT_TabStop, element(tab_stop_cxml)))
         value = None if new_value is None else getattr(WD_TAB_LEADER, new_value)
         expected_xml = xml(expected_cxml)
         return tab_stop, value, expected_xml
 
     @pytest.fixture
     def position_get_fixture(self, request):
-        tab_stop = TabStop(element("w:tab{w:pos=720}"))
+        tab_stop = TabStop(cast(CT_TabStop, element("w:tab{w:pos=720}")))
         return tab_stop, Twips(720)
 
     @pytest.fixture(
