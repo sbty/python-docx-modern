@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from docx.dml.color import ColorFormat
 from docx.enum.text import WD_UNDERLINE
 from docx.shared import ElementProxy, Emu
 
 if TYPE_CHECKING:
+    import docx.types as t
     from docx.enum.text import WD_COLOR_INDEX
+    from docx.oxml.styles import CT_Style
     from docx.oxml.text.run import CT_R
     from docx.shared import Length
 
@@ -18,10 +20,13 @@ class Font(ElementProxy):
     """Proxy object for parent of a `<w:rPr>` element and providing access to
     character properties such as font name, font size, bold, and subscript."""
 
-    def __init__(self, r: CT_R, parent: Any | None = None):
+    def __init__(self, r: CT_R | CT_Style, parent: t.ProvidesXmlPart | None = None) -> None:
         super().__init__(r, parent)
-        self._element = r
+        # -- `._r` is no longer used internally; kept for backward compatibility --
         self._r = r
+        # -- the `w:rPr` parent, a run (`w:r`) or a style (`w:style`), typed more narrowly
+        # -- than the inherited `._element` --
+        self._rPr_parent = r
 
     @property
     def all_caps(self) -> bool | None:
@@ -48,10 +53,10 @@ class Font(ElementProxy):
         self._set_bool_prop("b", value)
 
     @property
-    def color(self):
+    def color(self) -> ColorFormat:
         """A |ColorFormat| object providing a way to get and set the text color for this
         font."""
-        return ColorFormat(self._element)
+        return ColorFormat(self._rPr_parent)
 
     @property
     def complex_script(self) -> bool | None:
@@ -138,14 +143,14 @@ class Font(ElementProxy):
         (so the style hierarchy determines it) and when highlighting is explicitly turned off
         (`w:val="none"`); this property does not distinguish the two.
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr.highlight_val
 
     @highlight_color.setter
-    def highlight_color(self, value: WD_COLOR_INDEX | None):
-        rPr = self._element.get_or_add_rPr()
+    def highlight_color(self, value: WD_COLOR_INDEX | None) -> None:
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr.highlight_val = value
 
     @property
@@ -193,14 +198,14 @@ class Font(ElementProxy):
         Causes the text it controls to appear in the named font, if a matching font is
         found. |None| indicates the typeface is inherited from the style hierarchy.
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr.rFonts_ascii
 
     @name.setter
     def name(self, value: str | None) -> None:
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr.rFonts_ascii = value
         rPr.rFonts_hAnsi = value
 
@@ -272,14 +277,14 @@ class Font(ElementProxy):
             24.0
 
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr.sz_val
 
     @size.setter
     def size(self, emu: int | Length | None) -> None:
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr.sz_val = None if emu is None else Emu(emu)
 
     @property
@@ -343,14 +348,14 @@ class Font(ElementProxy):
         |None| indicates the subscript/subscript value is inherited from the style
         hierarchy.
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr.subscript
 
     @subscript.setter
     def subscript(self, value: bool | None) -> None:
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr.subscript = value
 
     @property
@@ -361,14 +366,14 @@ class Font(ElementProxy):
         |None| indicates the subscript/superscript value is inherited from the style
         hierarchy.
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr.superscript
 
     @superscript.setter
     def superscript(self, value: bool | None) -> None:
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr.superscript = value
 
     @property
@@ -382,7 +387,7 @@ class Font(ElementProxy):
         from :ref:`WdUnderline` are used to specify other outline styles such as double,
         wavy, and dotted.
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         val = rPr.u_val
@@ -398,7 +403,7 @@ class Font(ElementProxy):
 
     @underline.setter
     def underline(self, value: bool | WD_UNDERLINE | None) -> None:
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         # -- works fine without these two mappings, but only because True == 1 and
         # -- False == 0, which happen to match the mapping for WD_UNDERLINE.SINGLE
         # -- and .NONE respectively.
@@ -422,12 +427,12 @@ class Font(ElementProxy):
 
     def _get_bool_prop(self, name: str) -> bool | None:
         """Return the value of boolean child of `w:rPr` having `name`."""
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr._get_bool_val(name)  # pyright: ignore[reportPrivateUsage]
 
-    def _set_bool_prop(self, name: str, value: bool | None):
+    def _set_bool_prop(self, name: str, value: bool | None) -> None:
         """Assign `value` to the boolean child `name` of `w:rPr`."""
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr._set_bool_val(name, value)  # pyright: ignore[reportPrivateUsage]

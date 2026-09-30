@@ -12,11 +12,12 @@ from docx.shared import ElementProxy, RGBColor
 
 if TYPE_CHECKING:
     from docx.enum.dml import MSO_THEME_COLOR
+    from docx.oxml.styles import CT_Style
     from docx.oxml.text.font import CT_Color
     from docx.oxml.text.run import CT_R
 
-# -- other element types can be a parent of an `w:rPr` element, but for now only `w:r` is --
-RPrParent: TypeAlias = "CT_R"
+# -- the `w:rPr` parents a color can be read from: a run or a style definition --
+RPrParent: TypeAlias = "CT_R | CT_Style"
 
 
 class ColorFormat(ElementProxy):
