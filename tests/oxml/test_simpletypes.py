@@ -30,7 +30,8 @@ class DescribeMeasureParsing:
             simple_type.convert_from_xml(str_value)
 
     def it_raises_ValueError_on_a_non_finite_universal_measure(self):
-        with pytest.raises(ValueError, match="finite"):
+        # -- the message shows the whole attribute value, unit included --
+        with pytest.raises(ValueError, match="finite number, got '1e999in'"):
             ST_UniversalMeasure.convert_from_xml("1e999in")
 
     def it_raises_ValueError_on_an_unknown_universal_measure_unit(self):
@@ -60,6 +61,8 @@ class DescribeST_HpsMeasure:
             (Pt(10.5), "21"),
             # -- round to the nearest half-point rather than truncating --
             (Pt(10.75), "22"),
+            # -- an exact quarter-point tie rounds to the even half-point count --
+            (Pt(10.25), "20"),
             (Pt(18.28125), "37"),
         ],
     )

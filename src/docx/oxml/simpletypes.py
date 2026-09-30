@@ -20,15 +20,18 @@ if TYPE_CHECKING:
     from docx.shared import Length
 
 
-def _finite_float(str_value: str) -> float:
+def _finite_float(str_value: str, measure: str | None = None) -> float:
     """Return `str_value` parsed as a float, raising |ValueError| if it is not finite.
 
     Values like "INF" or "1E999" would otherwise surface later as |OverflowError| when
-    converted to an integer length.
+    converted to an integer length. `measure` is the whole attribute value to show in
+    the error message when `str_value` is only its numeric part.
     """
     value = float(str_value)
     if not math.isfinite(value):
-        raise ValueError(f"measure must be a finite number, got '{str_value}'")
+        raise ValueError(
+            f"measure must be a finite number, got '{measure if measure else str_value}'"
+        )
     return value
 
 
@@ -334,7 +337,9 @@ class ST_HpsMeasure(XsdUnsignedLong):
     @classmethod
     def convert_to_xml(cls, value: int | Length) -> str:
         emu = Emu(value)
-        # -- round to the nearest half-point; truncating wrote e.g. 10.75pt as 10.5pt --
+        # -- round to the nearest half-point; truncating wrote e.g. 10.75pt as 10.5pt. An
+        # -- exact quarter-point tie rounds to the even half-point count, i.e. a whole
+        # -- point, as `round()` does for the twips types: 10.25pt -> 10pt, 10.75pt -> 11pt
         half_points = int(round(emu.pt * 2))
         return str(half_points)
 
@@ -442,7 +447,7 @@ class ST_UniversalMeasure(BaseSimpleType):
     @classmethod
     def convert_from_xml(cls, str_value: str) -> Emu:
         float_part, units_part = str_value[:-2], str_value[-2:]
-        quantity = _finite_float(float_part)
+        quantity = _finite_float(float_part, str_value)
         multiplier = {
             "mm": 36000,
             "cm": 360000,
