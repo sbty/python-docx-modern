@@ -50,19 +50,6 @@ class DescribeCommentsPart:
         Comments_.assert_called_once_with(comments_part.element, comments_part)
         assert comments is comments_
 
-    def it_can_ensure_the_comment_styles_are_defined(self, package_: Mock):
-        comments_part = CommentsPart(
-            PackURI("/word/comments.xml"),
-            CT.WML_COMMENTS,
-            cast(CT_Comments, element("w:comments")),
-            package_,
-        )
-
-        comments_part.ensure_comment_styles()
-
-        styles_elm_ = package_.main_document_part.styles.element
-        styles_elm_.ensure_comment_styles.assert_called_once_with()
-
     def it_constructs_a_default_comments_part_to_help(self):
         package = Package()
 

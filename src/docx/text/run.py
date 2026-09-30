@@ -179,6 +179,9 @@ class Run(StoryChild):
 
         `comment_id` identfies the comment that references this range.
         """
+        # -- the reference run uses the "CommentReference" style; define it when missing --
+        self.part.ensure_comment_styles()
+
         # -- insert `w:commentRangeStart` with `comment_id` before this (first) run --
         self._r.insert_comment_range_start_above(comment_id)
 

@@ -135,6 +135,17 @@ class DescribeRun:
             ",w:r/(w:rPr/w:rStyle{w:val=CommentReference},w:commentReference{w:id=42}))"
         )
 
+    def it_ensures_the_comment_styles_are_defined_when_marking_a_range(
+        self, part_prop_: Mock, document_part_: Mock, paragraph_: Mock
+    ):
+        part_prop_.return_value = document_part_
+        p = cast(CT_P, element('w:p/w:r/w:t"referenced text"'))
+        run = Run(p.r_lst[0], paragraph_)
+
+        run.mark_comment_range(run, comment_id=42)
+
+        document_part_.ensure_comment_styles.assert_called_once_with()
+
     def it_knows_its_character_style(
         self, part_prop_: Mock, document_part_: Mock, paragraph_: Mock
     ):

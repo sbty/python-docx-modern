@@ -17,9 +17,9 @@ Unreleased (python-docx-modern fork)
 - Raise ValueError, not OverflowError or KeyError, for non-finite or unknown-unit
   measure values in XML
 - Round `Font.size` to the nearest half-point when writing instead of truncating
-- Fix #1609 Adding a comment (`Document.add_comment()` or `Comments.add_comment()`)
-  defines the "CommentReference" and "CommentText" styles its markup refers to when
-  the document lacks them
+- Fix #1609 Adding a comment, a comment paragraph or a comment reference range defines
+  the "CommentReference" and "CommentText" styles the markup refers to when the
+  document lacks them
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; add mypy strict checking for

@@ -251,6 +251,23 @@ class DescribeComment:
         assert len(paragraphs) == 2
         assert [para.text for para in paragraphs] == ["First para", "Second para"]
 
+    def it_ensures_the_comment_styles_when_adding_a_default_styled_paragraph(
+        self, comments_part_: Mock
+    ):
+        comment = Comment(cast(CT_Comment, element("w:comment{w:id=42}")), comments_part_)
+
+        comment.add_paragraph("A paragraph")
+
+        comments_part_.part.ensure_comment_styles.assert_called_once_with()
+
+    def but_not_when_adding_a_paragraph_with_an_explicit_style(self, comments_part_: Mock):
+        comments_part_.part.get_style_id.return_value = "BodyText"
+        comment = Comment(cast(CT_Comment, element("w:comment{w:id=42}")), comments_part_)
+
+        comment.add_paragraph("A paragraph", style="Body Text")
+
+        comments_part_.part.ensure_comment_styles.assert_not_called()
+
     def it_can_update_the_comment_author(self, comments_part_: Mock):
         comment_elm = cast(CT_Comment, element("w:comment{w:id=42,w:author=Old Author}"))
         comment = Comment(comment_elm, comments_part_)

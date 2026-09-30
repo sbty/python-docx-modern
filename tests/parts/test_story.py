@@ -13,7 +13,7 @@ from docx.styles.style import BaseStyle
 
 from ..unitutil.cxml import element
 from ..unitutil.file import snippet_text
-from ..unitutil.mock import instance_mock, method_mock, property_mock
+from ..unitutil.mock import Mock, instance_mock, method_mock, property_mock
 
 
 class DescribeStoryPart:
@@ -29,6 +29,16 @@ class DescribeStoryPart:
         relate_to_.assert_called_once_with(story_part, image_part_, RT.IMAGE)
         assert rId == "rId42"
         assert image is image_
+
+    def it_can_ensure_the_comment_styles_are_defined(
+        self, _document_part_prop_: Mock, document_part_: Mock
+    ):
+        _document_part_prop_.return_value = document_part_
+        story_part = StoryPart(None, None, None, None)  # pyright: ignore[reportArgumentType]
+
+        story_part.ensure_comment_styles()
+
+        document_part_.styles.element.ensure_comment_styles.assert_called_once_with()
 
     def it_can_get_a_style_by_id_and_type(self, _document_part_prop_, document_part_, style_):
         style_id = "BodyText"

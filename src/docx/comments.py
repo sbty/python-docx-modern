@@ -113,6 +113,7 @@ class Comment(BlockItemContainer):
         # -- have to assign style directly to element because `paragraph.style` raises when
         # -- a style is not present in the styles part
         if style is None:
+            self.part.ensure_comment_styles()
             paragraph._p.style = "CommentText"  # pyright: ignore[reportPrivateUsage]
 
         return paragraph

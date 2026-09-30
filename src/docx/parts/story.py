@@ -12,6 +12,7 @@ from docx.shared import Length, lazyproperty
 if TYPE_CHECKING:
     from docx.enum.style import WD_STYLE_TYPE
     from docx.image.image import Image
+    from docx.oxml.styles import CT_Styles
     from docx.parts.document import DocumentPart
     from docx.styles.style import BaseStyle
 
@@ -37,6 +38,15 @@ class StoryPart(XmlPart):
         image_part = package.get_or_add_image_part(image_descriptor)
         rId = self.relate_to(image_part, RT.IMAGE)
         return rId, image_part.image
+
+    def ensure_comment_styles(self) -> None:
+        """Define the built-in styles that comment markup refers to, when missing.
+
+        Comment paragraphs use the "CommentText" paragraph style and comment references the
+        "CommentReference" character style, which the default template does not define. The
+        styles live in the styles part of the main document, whichever story adds the markup.
+        """
+        cast("CT_Styles", self._document_part.styles.element).ensure_comment_styles()
 
     def get_style(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle:
         """Return the style in this document matching `style_id`.
