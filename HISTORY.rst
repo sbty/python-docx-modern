@@ -11,6 +11,7 @@ Unreleased (python-docx-modern fork)
   on every access
 - Fix #1494 Treat a zero (or undefined 0/0) image DPI as absent instead of raising
   ZeroDivisionError
+- Fix #1539 Tolerate fractional twips in unsigned measures such as `w:pgMar/@w:right`
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; add mypy strict checking for

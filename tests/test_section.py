@@ -452,6 +452,9 @@ class DescribeSection:
             ("w:sectPr/w:pgMar{w:gutter=600}", "gutter", 381000),
             ("w:sectPr/w:pgMar{w:header=720}", "header_distance", 457200),
             ("w:sectPr/w:pgMar{w:footer=840}", "footer_distance", 533400),
+            # -- some producers write fractional twips; round to nearest (#1539) --
+            ("w:sectPr/w:pgMar{w:right=0.218505859375}", "right_margin", 0),
+            ("w:sectPr/w:pgMar{w:left=120.6}", "left_margin", 76835),
             ("w:sectPr/w:pgMar", "left_margin", None),
             ("w:sectPr", "top_margin", None),
         ],
