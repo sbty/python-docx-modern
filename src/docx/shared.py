@@ -242,7 +242,7 @@ class lazyproperty(Generic[T]):
             # --- and store that value in the (otherwise unused) host-object
             # --- __dict__ value of same name ('fget' nominally)
             value = obj.__dict__[self._name] = self._fget(obj)
-            return cast(T, value)
+            return value
 
     def __set__(self, obj: Any, value: Any) -> None:
         """Raises unconditionally, to preserve read-only behavior.

@@ -12,7 +12,7 @@ from docx.parts.image import ImagePart
 from docx.shared import Inches
 
 from ..unitutil.file import test_file
-from ..unitutil.mock import ANY, initializer_mock, instance_mock, method_mock
+from ..unitutil.mock import ANY, Mock, initializer_mock, instance_mock, method_mock
 
 
 class DescribeImagePart:
@@ -39,7 +39,7 @@ class DescribeImagePart:
         assert image_part.default_cx == cx
         assert image_part.default_cy == cy
 
-    def it_uses_the_vertical_dpi_for_its_default_height(self, image_):
+    def it_uses_the_vertical_dpi_for_its_default_height(self, image_: Mock):
         image_.px_width, image_.px_height = 300, 200
         image_.horz_dpi, image_.vert_dpi = 100, 200
         image_part = ImagePart(PackURI("/word/media/image1.png"), CT.PNG, b"", image_)

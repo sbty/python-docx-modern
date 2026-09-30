@@ -18,6 +18,7 @@ from docx.shared import Emu, Inches, Length
 from ..unitutil.file import test_file
 from ..unitutil.mock import (
     ANY,
+    Mock,
     class_mock,
     function_mock,
     initializer_mock,
@@ -81,9 +82,9 @@ class DescribeImage:
         assert image.vert_dpi == vert_dpi
 
     # -- a zero DPI in the file is bogus and is treated as absent (#1494) --
-    def it_defaults_to_72_dpi_when_the_image_reports_zero_dpi(self, image_header_):
+    def it_defaults_to_72_dpi_when_the_image_reports_zero_dpi(self, image_header_: Mock):
         image_header_.horz_dpi = image_header_.vert_dpi = 0
-        image = Image(None, None, image_header_)
+        image = Image(b"", "image.jpg", image_header_)
         assert image.horz_dpi == 72
         assert image.vert_dpi == 72
 
@@ -106,7 +107,7 @@ class DescribeImage:
         # -- rewrite the XResolution and YResolution rationals in IFD0 of the EXIF APP1
         # -- TIFF structure to numerator/denominator --
         tiff_offset = blob.index(b"Exif\x00\x00") + 6
-        endian = "<" if blob[tiff_offset : tiff_offset + 2] == b"II" else ">"
+        endian = "<" if bytes(blob[tiff_offset : tiff_offset + 2]) == b"II" else ">"
         (ifd_offset,) = struct.unpack_from(endian + "L", blob, tiff_offset + 4)
         ifd = tiff_offset + ifd_offset
         (entry_count,) = struct.unpack_from(endian + "H", blob, ifd)
