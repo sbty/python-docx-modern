@@ -123,6 +123,7 @@ class DescribeImage:
 
         assert (image.horz_dpi, image.vert_dpi) == (72, 72)
         assert image.width == Inches(image.px_width / 72)
+        assert image.height == Inches(image.px_height / 72)
 
     def it_knows_the_image_native_size(self, size_fixture):
         image, width, height = size_fixture
