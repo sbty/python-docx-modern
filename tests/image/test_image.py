@@ -1,6 +1,7 @@
 """Unit test suite for docx.image package"""
 
 import io
+import struct
 
 import pytest
 
@@ -12,7 +13,7 @@ from docx.image.jpeg import Exif, Jfif
 from docx.image.png import Png
 from docx.image.tiff import Tiff
 from docx.opc.constants import CONTENT_TYPE as CT
-from docx.shared import Emu, Length
+from docx.shared import Emu, Inches, Length
 
 from ..unitutil.file import test_file
 from ..unitutil.mock import (
@@ -78,6 +79,50 @@ class DescribeImage:
         image = Image(None, None, image_header_)
         assert image.horz_dpi == horz_dpi
         assert image.vert_dpi == vert_dpi
+
+    # -- a zero DPI in the file is bogus and is treated as absent (#1494) --
+    def it_defaults_to_72_dpi_when_the_image_reports_zero_dpi(self, image_header_):
+        image_header_.horz_dpi = image_header_.vert_dpi = 0
+        image = Image(None, None, image_header_)
+        assert image.horz_dpi == 72
+        assert image.vert_dpi == 72
+
+    def it_can_size_a_jfif_jpeg_that_reports_zero_dpi(self):
+        with open(test_file("python-icon.jpeg"), "rb") as f:
+            blob = bytearray(f.read())
+        # -- rewrite JFIF APP0 density to units=inches, Xdensity=0, Ydensity=0 --
+        density_offset = blob.index(b"JFIF\x00") + 7
+        assert blob[density_offset - 11 : density_offset - 9] == b"\xff\xe0"
+        blob[density_offset : density_offset + 5] = b"\x01\x00\x00\x00\x00"
+        image = Image.from_blob(bytes(blob))
+
+        assert image.width == Inches(image.px_width / 72)
+        assert image.height == Inches(image.px_height / 72)
+
+    @pytest.mark.parametrize(("numerator", "denominator"), [(0, 1), (0, 0)])
+    def it_can_size_an_exif_jpeg_that_reports_zero_dpi(self, numerator: int, denominator: int):
+        with open(test_file("exif-420-dpi.jpg"), "rb") as f:
+            blob = bytearray(f.read())
+        # -- rewrite the XResolution and YResolution rationals in IFD0 of the EXIF APP1
+        # -- TIFF structure to numerator/denominator --
+        tiff_offset = blob.index(b"Exif\x00\x00") + 6
+        endian = "<" if blob[tiff_offset : tiff_offset + 2] == b"II" else ">"
+        (ifd_offset,) = struct.unpack_from(endian + "L", blob, tiff_offset + 4)
+        ifd = tiff_offset + ifd_offset
+        (entry_count,) = struct.unpack_from(endian + "H", blob, ifd)
+        patched_tags: list[int] = []
+        for i in range(entry_count):
+            tag, _, _, value_offset = struct.unpack_from(endian + "HHLL", blob, ifd + 2 + 12 * i)
+            if tag in (0x011A, 0x011B):  # -- XResolution, YResolution --
+                struct.pack_into(
+                    endian + "LL", blob, tiff_offset + value_offset, numerator, denominator
+                )
+                patched_tags.append(tag)
+        assert sorted(patched_tags) == [0x011A, 0x011B]
+        image = Image.from_blob(bytes(blob))
+
+        assert (image.horz_dpi, image.vert_dpi) == (72, 72)
+        assert image.width == Inches(image.px_width / 72)
 
     def it_knows_the_image_native_size(self, size_fixture):
         image, width, height = size_fixture

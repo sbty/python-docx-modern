@@ -24,6 +24,11 @@ class DescribeBmp:
         Bmp__init__.assert_called_once_with(ANY, cx, cy, horz_dpi, vert_dpi)
         assert isinstance(bmp, Bmp)
 
+    # -- 1-19 px/m round to 0 dpi and get the same default as 0 px/m (#1494) --
+    @pytest.mark.parametrize("px_per_meter", [0, 1, 19])
+    def it_defaults_to_96_dpi_when_px_per_meter_rounds_to_zero(self, px_per_meter: int):
+        assert Bmp._dpi(px_per_meter) == 96
+
     def it_knows_its_content_type(self):
         bmp = Bmp(None, None, None, None)
         assert bmp.content_type == MIME_TYPE.BMP

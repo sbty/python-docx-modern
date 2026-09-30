@@ -37,7 +37,6 @@ class Bmp(BaseImageHeader):
     @staticmethod
     def _dpi(px_per_meter):
         """Return the integer pixels per inch from `px_per_meter`, defaulting to 96 if
-        `px_per_meter` is zero."""
-        if px_per_meter == 0:
-            return 96
-        return int(round(px_per_meter * 0.0254))
+        `px_per_meter` is zero or so small it rounds to zero."""
+        dpi = int(round(px_per_meter * 0.0254))
+        return dpi if dpi > 0 else 96

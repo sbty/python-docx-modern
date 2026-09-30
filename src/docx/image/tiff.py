@@ -279,11 +279,12 @@ class _RationalIfdEntry(_IfdEntry):
         """Return the rational (numerator / denominator) value at `value_offset` in
         `stream_rdr` as a floating-point number.
 
-        Only supports single values at present.
+        A zero denominator, which some writers use for an undefined value, is parsed as
+        zero rather than raising. Only supports single values at present.
         """
         if value_count == 1:
             numerator = stream_rdr.read_long(value_offset)
             denominator = stream_rdr.read_long(value_offset, 4)
-            return numerator / denominator
+            return numerator / denominator if denominator else 0.0
         else:  # pragma: no cover
             return "Multi-value Rational NOT IMPLEMENTED"

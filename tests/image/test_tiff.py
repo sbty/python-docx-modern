@@ -440,3 +440,10 @@ class Describe_RationalIfdEntry:
         stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
         val = _RationalIfdEntry._parse_value(stream_rdr, None, 1, 0)
         assert val == 0.5
+
+    # -- some writers store an undefined rational as 0/0 (#1494) --
+    def it_parses_a_zero_denominator_rational_as_zero(self):
+        bytes_ = b"\x00\x00\x00\x00\x00\x00\x00\x00"
+        stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
+        val = _RationalIfdEntry._parse_value(stream_rdr, None, 1, 0)
+        assert val == 0.0

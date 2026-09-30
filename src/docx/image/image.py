@@ -89,17 +89,21 @@ class Image:
     def horz_dpi(self) -> int:
         """Integer dots per inch for the width of this image.
 
-        Defaults to 72 when not present in the file, as is often the case.
+        Defaults to 72 when not present in the file, as is often the case, or when the
+        file reports a bogus value of zero (or less).
         """
-        return self._image_header.horz_dpi
+        dpi = self._image_header.horz_dpi
+        return dpi if dpi > 0 else 72
 
     @property
     def vert_dpi(self) -> int:
         """Integer dots per inch for the height of this image.
 
-        Defaults to 72 when not present in the file, as is often the case.
+        Defaults to 72 when not present in the file, as is often the case, or when the
+        file reports a bogus value of zero (or less).
         """
-        return self._image_header.vert_dpi
+        dpi = self._image_header.vert_dpi
+        return dpi if dpi > 0 else 72
 
     @property
     def width(self) -> Inches:
