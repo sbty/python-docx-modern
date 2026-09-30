@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import IO, TYPE_CHECKING, Iterator, cast
+from collections.abc import Iterator
+from typing import IO, TYPE_CHECKING, cast
 
 from docx.drawing import Drawing
 from docx.enum.style import WD_STYLE_TYPE
@@ -31,11 +32,11 @@ class Run(StoryChild):
     the style hierarchy.
     """
 
-    def __init__(self, r: CT_R, parent: t.ProvidesStoryPart):
+    def __init__(self, r: CT_R, parent: t.ProvidesStoryPart) -> None:
         super().__init__(parent)
         self._r = self._element = self.element = r
 
-    def add_break(self, break_type: WD_BREAK = WD_BREAK.LINE):
+    def add_break(self, break_type: WD_BREAK = WD_BREAK.LINE) -> None:
         """Add a break element of `break_type` to this run.
 
         `break_type` can take the values `WD_BREAK.LINE`, `WD_BREAK.PAGE`, and
@@ -85,7 +86,7 @@ class Run(StoryChild):
         tab character."""
         self._r.add_tab()
 
-    def add_text(self, text: str):
+    def add_text(self, text: str) -> _Text:
         """Returns a newly appended |_Text| object (corresponding to a new ``<w:t>``
         child element) to the run, containing `text`.
 
@@ -106,10 +107,10 @@ class Run(StoryChild):
         return self.font.bold
 
     @bold.setter
-    def bold(self, value: bool | None):
+    def bold(self, value: bool | None) -> None:
         self.font.bold = value
 
-    def clear(self):
+    def clear(self) -> Run:
         """Return reference to this run after removing all its content.
 
         All run formatting is preserved.
@@ -147,7 +148,7 @@ class Run(StoryChild):
         return self.font.italic
 
     @italic.setter
-    def italic(self, value: bool | None):
+    def italic(self, value: bool | None) -> None:
         self.font.italic = value
 
     def iter_inner_content(self) -> Iterator[str | Drawing | RenderedPageBreak]:
@@ -198,7 +199,7 @@ class Run(StoryChild):
         return cast(CharacterStyle, self.part.get_style(style_id, WD_STYLE_TYPE.CHARACTER))
 
     @style.setter
-    def style(self, style_or_name: str | CharacterStyle | None):
+    def style(self, style_or_name: str | CharacterStyle | None) -> None:
         style_id = self.part.get_style_id(style_or_name, WD_STYLE_TYPE.CHARACTER)
         self._r.style = style_id
 
@@ -221,7 +222,7 @@ class Run(StoryChild):
         return self._r.text
 
     @text.setter
-    def text(self, text: str):
+    def text(self, text: str) -> None:
         self._r.text = text
 
     @property
@@ -245,13 +246,13 @@ class Run(StoryChild):
         return self.font.underline
 
     @underline.setter
-    def underline(self, value: bool | WD_UNDERLINE | None):
+    def underline(self, value: bool | WD_UNDERLINE | None) -> None:
         self.font.underline = value
 
 
 class _Text:
     """Proxy object wrapping `<w:t>` element."""
 
-    def __init__(self, t_elm: CT_Text):
-        super(_Text, self).__init__()
+    def __init__(self, t_elm: CT_Text) -> None:
+        super().__init__()
         self._t = t_elm
