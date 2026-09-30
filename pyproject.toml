@@ -124,11 +124,12 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# -- Ratchet: modules not yet modernized are exempt from the stricter rules. Add a module to
-# -- this brace-list (and to the mypy override below) once it passes them. Only the UP codes
-# -- that unmigrated code currently violates are listed, so UP015/UP018/UP032/UP034 stay
-# -- enforced everywhere, as before.
-"!src/docx/{text/font,text/hyperlink,text/pagebreak,text/paragraph,text/parfmt,text/run,text/tabstops}.py" = [
+# -- Ratchet: modules not yet modernized are exempt from the stricter rules. The negated glob
+# -- names what IS migrated: the whole `docx.text` package. Add a migrated module or package
+# -- to it as a brace-list, e.g. "!src/docx/{text/*,table}.py", and to the mypy override
+# -- below. Only the UP codes that unmigrated code currently violates are listed, so
+# -- UP015/UP018/UP032/UP034 stay enforced everywhere, as before.
+"!src/docx/text/*.py" = [
     "ANN",
     "B",
     "UP006",
@@ -173,20 +174,13 @@ mypy_path = "src:typings"
 files = ["src/docx"]
 
 [[tool.mypy.overrides]]
-# -- Ratchet: errors are ignored in modules not yet modernized. List each module here once it
-# -- passes `mypy --strict`; keep it in sync with the ruff per-file-ignores above.
+# -- Ratchet: errors are ignored in modules not yet modernized. List each migrated module or
+# -- package (as "pkg.*") in the override below; keep it in sync with the ruff
+# -- per-file-ignores above.
 module = ["docx.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = [
-    "docx.text.font",
-    "docx.text.hyperlink",
-    "docx.text.pagebreak",
-    "docx.text.paragraph",
-    "docx.text.parfmt",
-    "docx.text.run",
-    "docx.text.tabstops",
-]
+module = ["docx.text.*"]
 ignore_errors = false
 
