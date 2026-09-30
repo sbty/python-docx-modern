@@ -1,8 +1,11 @@
 """Test suite for docx.text.parfmt module, containing the ParagraphFormat object."""
 
+from typing import cast
+
 import pytest
 
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
+from docx.oxml.text.paragraph import CT_P
 from docx.shared import Pt
 from docx.text.parfmt import ParagraphFormat
 from docx.text.tabstops import TabStops
@@ -110,7 +113,7 @@ class DescribeParagraphFormat:
     )
     def alignment_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -128,7 +131,7 @@ class DescribeParagraphFormat:
     )
     def alignment_set_fixture(self, request):
         p_cxml, value, expected_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_cxml)
         return paragraph_format, value, expected_xml
 
@@ -143,7 +146,7 @@ class DescribeParagraphFormat:
     )
     def first_indent_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -167,7 +170,7 @@ class DescribeParagraphFormat:
     )
     def first_indent_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
@@ -182,7 +185,7 @@ class DescribeParagraphFormat:
     )
     def left_indent_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -196,7 +199,7 @@ class DescribeParagraphFormat:
     )
     def left_indent_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
@@ -212,7 +215,7 @@ class DescribeParagraphFormat:
     )
     def line_spacing_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -246,7 +249,7 @@ class DescribeParagraphFormat:
     )
     def line_spacing_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
@@ -266,7 +269,7 @@ class DescribeParagraphFormat:
     )
     def line_spacing_rule_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -297,7 +300,7 @@ class DescribeParagraphFormat:
     )
     def line_spacing_rule_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
@@ -319,7 +322,7 @@ class DescribeParagraphFormat:
     )
     def on_off_get_fixture(self, request):
         p_cxml, prop_name, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, prop_name, expected_value
 
     @pytest.fixture(
@@ -365,7 +368,7 @@ class DescribeParagraphFormat:
     )
     def on_off_set_fixture(self, request):
         p_cxml, prop_name, value, expected_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_cxml)
         return paragraph_format, prop_name, value, expected_xml
 
@@ -380,7 +383,7 @@ class DescribeParagraphFormat:
     )
     def right_indent_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -394,7 +397,7 @@ class DescribeParagraphFormat:
     )
     def right_indent_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
@@ -408,7 +411,7 @@ class DescribeParagraphFormat:
     )
     def space_after_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -429,7 +432,7 @@ class DescribeParagraphFormat:
     )
     def space_after_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
@@ -443,7 +446,7 @@ class DescribeParagraphFormat:
     )
     def space_before_get_fixture(self, request):
         p_cxml, expected_value = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         return paragraph_format, expected_value
 
     @pytest.fixture(
@@ -464,13 +467,13 @@ class DescribeParagraphFormat:
     )
     def space_before_set_fixture(self, request):
         p_cxml, value, expected_p_cxml = request.param
-        paragraph_format = ParagraphFormat(element(p_cxml))
+        paragraph_format = ParagraphFormat(cast(CT_P, element(p_cxml)))
         expected_xml = xml(expected_p_cxml)
         return paragraph_format, value, expected_xml
 
     @pytest.fixture
     def tab_stops_fixture(self, TabStops_, tab_stops_):
-        p = element("w:p/w:pPr")
+        p = cast(CT_P, element("w:p/w:pPr"))
         pPr = p.pPr
         paragraph_format = ParagraphFormat(p, None)
         return paragraph_format, TabStops_, pPr, tab_stops_

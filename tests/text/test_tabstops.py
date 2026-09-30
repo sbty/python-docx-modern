@@ -1,8 +1,11 @@
 """Test suite for the docx.text.tabstops module."""
 
+from typing import cast
+
 import pytest
 
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
+from docx.oxml.text.parfmt import CT_PPr
 from docx.shared import Twips
 from docx.text.tabstops import TabStop, TabStops
 
@@ -165,7 +168,7 @@ class DescribeTabStops:
         assert tab_stop is tab_stop_
 
     def it_raises_on_indexed_access_when_empty(self):
-        tab_stops = TabStops(element("w:pPr"))
+        tab_stops = TabStops(cast(CT_PPr, element("w:pPr")))
         with pytest.raises(IndexError):
             tab_stops[0]
 
@@ -201,7 +204,7 @@ class DescribeTabStops:
     )
     def clear_all_fixture(self, request):
         pPr_cxml = request.param
-        tab_stops = TabStops(element(pPr_cxml))
+        tab_stops = TabStops(cast(CT_PPr, element(pPr_cxml)))
         expected_xml = xml("w:pPr")
         return tab_stops, expected_xml
 
@@ -222,7 +225,7 @@ class DescribeTabStops:
     )
     def del_fixture(self, request):
         pPr_cxml, idx, expected_cxml = request.param
-        tab_stops = TabStops(element(pPr_cxml))
+        tab_stops = TabStops(cast(CT_PPr, element(pPr_cxml)))
         expected_xml = xml(expected_cxml)
         return tab_stops, idx, expected_xml
 
@@ -234,7 +237,7 @@ class DescribeTabStops:
     )
     def del_raises_fixture(self, request):
         tab_stops_cxml, idx = request.param
-        tab_stops = TabStops(element(tab_stops_cxml))
+        tab_stops = TabStops(cast(CT_PPr, element(tab_stops_cxml)))
         return tab_stops, idx
 
     @pytest.fixture(
@@ -274,7 +277,7 @@ class DescribeTabStops:
     )
     def add_tab_fixture(self, request):
         pPr_cxml, position, kwargs, expected_cxml = request.param
-        tab_stops = TabStops(element(pPr_cxml))
+        tab_stops = TabStops(cast(CT_PPr, element(pPr_cxml)))
         expected_xml = xml(expected_cxml)
         return tab_stops, position, kwargs, expected_xml
 
@@ -287,7 +290,7 @@ class DescribeTabStops:
     )
     def index_fixture(self, request, TabStop_, tab_stop_):
         pPr_cxml, idx = request.param
-        pPr = element(pPr_cxml)
+        pPr = cast(CT_PPr, element(pPr_cxml))
         tab = pPr.xpath("./w:tabs/w:tab")[idx]
         tab_stops = TabStops(pPr)
         return tab_stops, idx, TabStop_, tab, tab_stop_
@@ -301,7 +304,7 @@ class DescribeTabStops:
     )
     def iter_fixture(self, request, TabStop_, tab_stop_):
         pPr_cxml, expected_count = request.param
-        pPr = element(pPr_cxml)
+        pPr = cast(CT_PPr, element(pPr_cxml))
         tab_elms = pPr.xpath("//w:tab")
         tab_stops = TabStops(pPr)
         expected_calls = [call(tab) for tab in tab_elms]
@@ -315,7 +318,7 @@ class DescribeTabStops:
     )
     def len_fixture(self, request):
         tab_stops_cxml, expected_value = request.param
-        tab_stops = TabStops(element(tab_stops_cxml))
+        tab_stops = TabStops(cast(CT_PPr, element(tab_stops_cxml)))
         return tab_stops, expected_value
 
     # fixture components ---------------------------------------------

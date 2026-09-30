@@ -57,9 +57,11 @@ class CT_PPr(BaseOxmlElement):
     get_or_add_ind: Callable[[], CT_Ind]
     get_or_add_pStyle: Callable[[], CT_String]
     get_or_add_sectPr: Callable[[], CT_SectPr]
+    get_or_add_tabs: Callable[[], CT_TabStops]
     _insert_sectPr: Callable[[CT_SectPr], None]
     _remove_pStyle: Callable[[], None]
     _remove_sectPr: Callable[[], None]
+    _remove_tabs: Callable[[], None]
 
     _tag_seq = (
         "w:pStyle",
@@ -107,7 +109,9 @@ class CT_PPr(BaseOxmlElement):
     pageBreakBefore = ZeroOrOne("w:pageBreakBefore", successors=_tag_seq[4:])
     widowControl = ZeroOrOne("w:widowControl", successors=_tag_seq[6:])
     numPr = ZeroOrOne("w:numPr", successors=_tag_seq[7:])
-    tabs = ZeroOrOne("w:tabs", successors=_tag_seq[11:])
+    tabs: CT_TabStops | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "w:tabs", successors=_tag_seq[11:]
+    )
     spacing = ZeroOrOne("w:spacing", successors=_tag_seq[22:])
     ind: CT_Ind | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
         "w:ind", successors=_tag_seq[23:]
@@ -186,14 +190,14 @@ class CT_PPr(BaseOxmlElement):
         return self.jc.val if self.jc is not None else None
 
     @jc_val.setter
-    def jc_val(self, value):
+    def jc_val(self, value: WD_ALIGN_PARAGRAPH | None) -> None:
         if value is None:
             self._remove_jc()
             return
         self.get_or_add_jc().val = value
 
     @property
-    def keepLines_val(self):
+    def keepLines_val(self) -> bool | None:
         """The value of `keepLines/@val` or |None| if not present."""
         keepLines = self.keepLines
         if keepLines is None:
@@ -201,14 +205,14 @@ class CT_PPr(BaseOxmlElement):
         return keepLines.val
 
     @keepLines_val.setter
-    def keepLines_val(self, value):
+    def keepLines_val(self, value: bool | None) -> None:
         if value is None:
             self._remove_keepLines()
         else:
             self.get_or_add_keepLines().val = value
 
     @property
-    def keepNext_val(self):
+    def keepNext_val(self) -> bool | None:
         """The value of `keepNext/@val` or |None| if not present."""
         keepNext = self.keepNext
         if keepNext is None:
@@ -216,14 +220,14 @@ class CT_PPr(BaseOxmlElement):
         return keepNext.val
 
     @keepNext_val.setter
-    def keepNext_val(self, value):
+    def keepNext_val(self, value: bool | None) -> None:
         if value is None:
             self._remove_keepNext()
         else:
             self.get_or_add_keepNext().val = value
 
     @property
-    def pageBreakBefore_val(self):
+    def pageBreakBefore_val(self) -> bool | None:
         """The value of `pageBreakBefore/@val` or |None| if not present."""
         pageBreakBefore = self.pageBreakBefore
         if pageBreakBefore is None:
@@ -231,14 +235,14 @@ class CT_PPr(BaseOxmlElement):
         return pageBreakBefore.val
 
     @pageBreakBefore_val.setter
-    def pageBreakBefore_val(self, value):
+    def pageBreakBefore_val(self, value: bool | None) -> None:
         if value is None:
             self._remove_pageBreakBefore()
         else:
             self.get_or_add_pageBreakBefore().val = value
 
     @property
-    def spacing_after(self):
+    def spacing_after(self) -> Length | None:
         """The value of `w:spacing/@w:after` or |None| if not present."""
         spacing = self.spacing
         if spacing is None:
@@ -246,13 +250,13 @@ class CT_PPr(BaseOxmlElement):
         return spacing.after
 
     @spacing_after.setter
-    def spacing_after(self, value):
+    def spacing_after(self, value: Length | None) -> None:
         if value is None and self.spacing is None:
             return
         self.get_or_add_spacing().after = value
 
     @property
-    def spacing_before(self):
+    def spacing_before(self) -> Length | None:
         """The value of `w:spacing/@w:before` or |None| if not present."""
         spacing = self.spacing
         if spacing is None:
@@ -260,13 +264,13 @@ class CT_PPr(BaseOxmlElement):
         return spacing.before
 
     @spacing_before.setter
-    def spacing_before(self, value):
+    def spacing_before(self, value: Length | None) -> None:
         if value is None and self.spacing is None:
             return
         self.get_or_add_spacing().before = value
 
     @property
-    def spacing_line(self):
+    def spacing_line(self) -> Length | None:
         """The value of `w:spacing/@w:line` or |None| if not present."""
         spacing = self.spacing
         if spacing is None:
@@ -274,13 +278,13 @@ class CT_PPr(BaseOxmlElement):
         return spacing.line
 
     @spacing_line.setter
-    def spacing_line(self, value):
+    def spacing_line(self, value: Length | None) -> None:
         if value is None and self.spacing is None:
             return
         self.get_or_add_spacing().line = value
 
     @property
-    def spacing_lineRule(self):
+    def spacing_lineRule(self) -> WD_LINE_SPACING | None:
         """The value of `w:spacing/@w:lineRule` as a member of the :ref:`WdLineSpacing`
         enumeration.
 
@@ -298,7 +302,7 @@ class CT_PPr(BaseOxmlElement):
         return lineRule
 
     @spacing_lineRule.setter
-    def spacing_lineRule(self, value):
+    def spacing_lineRule(self, value: WD_LINE_SPACING | None) -> None:
         if value is None and self.spacing is None:
             return
         self.get_or_add_spacing().lineRule = value
@@ -324,7 +328,7 @@ class CT_PPr(BaseOxmlElement):
         pStyle.val = style
 
     @property
-    def widowControl_val(self):
+    def widowControl_val(self) -> bool | None:
         """The value of `widowControl/@val` or |None| if not present."""
         widowControl = self.widowControl
         if widowControl is None:
@@ -332,7 +336,7 @@ class CT_PPr(BaseOxmlElement):
         return widowControl.val
 
     @widowControl_val.setter
-    def widowControl_val(self, value):
+    def widowControl_val(self, value: bool | None) -> None:
         if value is None:
             self._remove_widowControl()
         else:
@@ -343,10 +347,18 @@ class CT_Spacing(BaseOxmlElement):
     """``<w:spacing>`` element, specifying paragraph spacing attributes such as space
     before and line spacing."""
 
-    after = OptionalAttribute("w:after", ST_TwipsMeasure)
-    before = OptionalAttribute("w:before", ST_TwipsMeasure)
-    line = OptionalAttribute("w:line", ST_SignedTwipsMeasure)
-    lineRule = OptionalAttribute("w:lineRule", WD_LINE_SPACING)
+    after: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:after", ST_TwipsMeasure
+    )
+    before: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:before", ST_TwipsMeasure
+    )
+    line: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:line", ST_SignedTwipsMeasure
+    )
+    lineRule: WD_LINE_SPACING | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:lineRule", WD_LINE_SPACING
+    )
 
 
 class CT_TabStop(BaseOxmlElement):
@@ -377,6 +389,9 @@ class CT_TabStop(BaseOxmlElement):
 
 class CT_TabStops(BaseOxmlElement):
     """``<w:tabs>`` element, container for a sorted sequence of tab stops."""
+
+    tab_lst: list[CT_TabStop]
+    _new_tab: Callable[[], CT_TabStop]
 
     tab = OneOrMore("w:tab", successors=())
 

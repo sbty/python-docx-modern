@@ -1,7 +1,14 @@
 """Tabstop-related proxy types."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.shared import ElementProxy
+
+if TYPE_CHECKING:
+    from docx.oxml.text.parfmt import CT_PPr
 
 
 class TabStops(ElementProxy):
@@ -13,16 +20,18 @@ class TabStops(ElementProxy):
     to be constructed directly.
     """
 
-    def __init__(self, element):
+    def __init__(self, element: CT_PPr) -> None:
         super(TabStops, self).__init__(element, None)
         self._pPr = element
 
     def __delitem__(self, idx):
         """Remove the tab at offset `idx` in this sequence."""
         tabs = self._pPr.tabs
+        if tabs is None:
+            raise IndexError("tab index out of range")
         try:
             tabs.remove(tabs[idx])
-        except (AttributeError, IndexError):
+        except IndexError:
             raise IndexError("tab index out of range")
 
         if len(tabs) == 0:
@@ -66,7 +75,7 @@ class TabStops(ElementProxy):
 
     def clear_all(self):
         """Remove all custom tab stops."""
-        self._pPr._remove_tabs()
+        self._pPr._remove_tabs()  # pyright: ignore[reportPrivateUsage]
 
 
 class TabStop(ElementProxy):

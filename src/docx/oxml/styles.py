@@ -95,11 +95,13 @@ class CT_LsdException(BaseOxmlElement):
 
 if TYPE_CHECKING:
     from docx.oxml.text.font import CT_RPr
+    from docx.oxml.text.parfmt import CT_PPr
 
 
 class CT_Style(BaseOxmlElement):
     """A ``<w:style>`` element, representing a style definition."""
 
+    get_or_add_pPr: Callable[[], CT_PPr]
     get_or_add_rPr: Callable[[], CT_RPr]
 
     _tag_seq = (
@@ -134,7 +136,9 @@ class CT_Style(BaseOxmlElement):
     unhideWhenUsed = ZeroOrOne("w:unhideWhenUsed", successors=_tag_seq[10:])
     qFormat = ZeroOrOne("w:qFormat", successors=_tag_seq[11:])
     locked = ZeroOrOne("w:locked", successors=_tag_seq[12:])
-    pPr = ZeroOrOne("w:pPr", successors=_tag_seq[17:])
+    pPr: CT_PPr | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "w:pPr", successors=_tag_seq[17:]
+    )
     rPr: CT_RPr | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
         "w:rPr", successors=_tag_seq[18:]
     )
