@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from typing import TYPE_CHECKING, Callable, cast
 
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ROW_HEIGHT_RULE, WD_TABLE_DIRECTION
@@ -117,7 +118,7 @@ class CT_Row(BaseOxmlElement):
         trPr.trHeight_hRule = value
 
     @property
-    def trHeight_val(self):
+    def trHeight_val(self) -> Length | None:
         """Return the value of `w:trPr/w:trHeight@w:val`, or |None| if not present."""
         trPr = self.trPr
         if trPr is None:
@@ -173,11 +174,11 @@ class CT_Tbl(BaseOxmlElement):
             tblPr.get_or_add_bidiVisual().val = bool(value)
 
     @property
-    def col_count(self):
+    def col_count(self) -> int:
         """The number of grid columns in this table."""
         return len(self.tblGrid.gridCol_lst)
 
-    def iter_tcs(self):
+    def iter_tcs(self) -> Iterator[CT_Tc]:
         """Generate each of the `w:tc` elements in this table, left to right and top to
         bottom.
 
@@ -448,7 +449,7 @@ class CT_Tc(BaseOxmlElement):
                 return tc_below.bottom
         return self._tr_idx + 1
 
-    def clear_content(self):
+    def clear_content(self) -> None:
         """Remove all content elements, preserving `w:tcPr` element if present.
 
         Note that this leaves the `w:tc` element in an invalid state because it doesn't
@@ -844,7 +845,7 @@ class CT_TcPr(BaseOxmlElement):
             self.get_or_add_gridSpan().val = value
 
     @property
-    def vAlign_val(self):
+    def vAlign_val(self) -> WD_CELL_VERTICAL_ALIGNMENT | None:
         """Value of `w:val` attribute on  `w:vAlign` child.
 
         Value is |None| if `w:vAlign` child is not present. The `w:val` attribute on
@@ -950,7 +951,7 @@ class CT_TrPr(BaseOxmlElement):
         trHeight.hRule = value
 
     @property
-    def trHeight_val(self):
+    def trHeight_val(self) -> Length | None:
         """Return the value of `w:trHeight@w:val`, or |None| if not present."""
         trHeight = self.trHeight
         return None if trHeight is None else trHeight.val

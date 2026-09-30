@@ -125,11 +125,11 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 # -- Ratchet: modules not yet modernized are exempt from the stricter rules. The negated glob
-# -- names what IS migrated: the whole `docx.text` package. Add a migrated module or package
-# -- to it as a brace-list, e.g. "!src/docx/{text/*,table}.py", and to the mypy override
-# -- below. Only the UP codes that unmigrated code currently violates are listed, so
-# -- UP015/UP018/UP032/UP034 stay enforced everywhere, as before.
-"!src/docx/text/*.py" = [
+# -- names what IS migrated: `docx.table` and the whole `docx.text` package. Add a migrated
+# -- module or package to its brace-list and to the mypy override below. Only the UP codes
+# -- that unmigrated code currently violates are listed, so UP015/UP018/UP032/UP034 stay
+# -- enforced everywhere, as before.
+"!src/docx/{table,text/*}.py" = [
     "ANN",
     "B",
     "UP006",
@@ -181,6 +181,6 @@ module = ["docx.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["docx.text.*"]
+module = ["docx.table", "docx.text.*"]
 ignore_errors = false
 

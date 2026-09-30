@@ -79,7 +79,7 @@ class BlockItemContainer(StoryChild):
             yield (Paragraph(element, self) if isinstance(element, CT_P) else Table(element, self))
 
     @property
-    def paragraphs(self):
+    def paragraphs(self) -> list[Paragraph]:
         """A list containing the paragraphs in this container, in document order.
 
         Read-only.
@@ -87,7 +87,7 @@ class BlockItemContainer(StoryChild):
         return [Paragraph(p, self) for p in self._element.p_lst]
 
     @property
-    def tables(self):
+    def tables(self) -> list[Table]:
         """A list containing the tables in this container, in document order.
 
         Read-only.
