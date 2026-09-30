@@ -93,6 +93,8 @@ class DescribeFont:
             ("w:r/w:rPr", Pt(12), "w:r/w:rPr/w:sz{w:val=24}"),
             ("w:r/w:rPr/w:sz{w:val=24}", Pt(18), "w:r/w:rPr/w:sz{w:val=36}"),
             ("w:r/w:rPr/w:sz{w:val=36}", None, "w:r/w:rPr"),
+            # -- a size between half-points rounds to the nearest one, not down --
+            ("w:r", Pt(10.75), "w:r/w:rPr/w:sz{w:val=22}"),
         ],
     )
     def it_can_change_its_size(self, r_cxml: str, value: Length | None, expected_r_cxml: str):

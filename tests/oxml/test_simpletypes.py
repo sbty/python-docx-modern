@@ -53,6 +53,19 @@ class DescribeST_HpsMeasure:
     def it_converts_an_XML_value_to_a_Length(self, str_value: str, expected_value: int):
         assert ST_HpsMeasure.convert_from_xml(str_value) == expected_value
 
+    @pytest.mark.parametrize(
+        ("value", "expected_str"),
+        [
+            (Pt(12), "24"),
+            (Pt(10.5), "21"),
+            # -- round to the nearest half-point rather than truncating --
+            (Pt(10.75), "22"),
+            (Pt(18.28125), "37"),
+        ],
+    )
+    def it_converts_a_Length_to_an_XML_value(self, value: int, expected_str: str):
+        assert ST_HpsMeasure.convert_to_xml(value) == expected_str
+
     @pytest.mark.parametrize("str_value", ["abc", "NaN"])
     def it_raises_on_a_value_that_is_not_a_measure(self, str_value: str):
         # -- any ValueError is the contract; the message comes from int()/float() --

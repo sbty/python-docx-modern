@@ -16,6 +16,7 @@ Unreleased (python-docx-modern fork)
 - Fix #1475 Tolerate fractional half-point font sizes (`w:sz`)
 - Raise ValueError, not OverflowError or KeyError, for non-finite or unknown-unit
   measure values in XML
+- Round `Font.size` to the nearest half-point when writing instead of truncating
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; add mypy strict checking for

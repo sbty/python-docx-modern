@@ -334,7 +334,8 @@ class ST_HpsMeasure(XsdUnsignedLong):
     @classmethod
     def convert_to_xml(cls, value: int | Length) -> str:
         emu = Emu(value)
-        half_points = int(emu.pt * 2)
+        # -- round to the nearest half-point; truncating wrote e.g. 10.75pt as 10.5pt --
+        half_points = int(round(emu.pt * 2))
         return str(half_points)
 
 
