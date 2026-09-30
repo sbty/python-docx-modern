@@ -77,6 +77,8 @@ class DescribeFont:
             ("w:r", None),
             ("w:r/w:rPr", None),
             ("w:r/w:rPr/w:sz{w:val=28}", Pt(14)),
+            # -- some producers write fractional half-points (#1475) --
+            ("w:r/w:rPr/w:sz{w:val=36.5625}", Pt(18.28125)),
         ],
     )
     def it_knows_its_size(self, r_cxml: str, expected_value: Length | None):

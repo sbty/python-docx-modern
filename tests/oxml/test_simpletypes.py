@@ -4,8 +4,30 @@ from __future__ import annotations
 
 import pytest
 
-from docx.oxml.simpletypes import ST_SignedTwipsMeasure, ST_TwipsMeasure
-from docx.shared import Inches, Twips
+from docx.oxml.simpletypes import ST_HpsMeasure, ST_SignedTwipsMeasure, ST_TwipsMeasure
+from docx.shared import Inches, Pt, Twips
+
+
+class DescribeST_HpsMeasure:
+    """Unit-test suite for `docx.oxml.simpletypes.ST_HpsMeasure`."""
+
+    @pytest.mark.parametrize(
+        ("str_value", "expected_value"),
+        [
+            ("28", Pt(14)),
+            # -- fractional half-points are kept, not rounded (#1475) --
+            ("36.5625", Pt(18.28125)),
+            ("12pt", Pt(12)),
+        ],
+    )
+    def it_converts_an_XML_value_to_a_Length(self, str_value: str, expected_value: int):
+        assert ST_HpsMeasure.convert_from_xml(str_value) == expected_value
+
+    @pytest.mark.parametrize("str_value", ["abc", "NaN"])
+    def it_raises_on_a_value_that_is_not_a_measure(self, str_value: str):
+        # -- any ValueError is the contract; the message comes from int()/float() --
+        with pytest.raises(ValueError):  # noqa: PT011
+            ST_HpsMeasure.convert_from_xml(str_value)
 
 
 class DescribeST_TwipsMeasure:
