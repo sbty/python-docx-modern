@@ -4,8 +4,38 @@ from __future__ import annotations
 
 import pytest
 
-from docx.oxml.simpletypes import ST_HpsMeasure, ST_SignedTwipsMeasure, ST_TwipsMeasure
+from docx.oxml.simpletypes import (
+    BaseSimpleType,
+    ST_HpsMeasure,
+    ST_SignedTwipsMeasure,
+    ST_TblWidthTwips,
+    ST_TwipsMeasure,
+    ST_UniversalMeasure,
+)
 from docx.shared import Inches, Pt, Twips
+
+
+class DescribeMeasureParsing:
+    """Invalid measure values raise `ValueError`, not `OverflowError` or `KeyError`."""
+
+    @pytest.mark.parametrize(
+        "simple_type",
+        [ST_HpsMeasure, ST_SignedTwipsMeasure, ST_TblWidthTwips, ST_TwipsMeasure],
+    )
+    @pytest.mark.parametrize("str_value", ["INF", "-INF", "1E999"])
+    def it_raises_ValueError_on_a_non_finite_number(
+        self, simple_type: type[BaseSimpleType], str_value: str
+    ):
+        with pytest.raises(ValueError, match="finite"):
+            simple_type.convert_from_xml(str_value)
+
+    def it_raises_ValueError_on_a_non_finite_universal_measure(self):
+        with pytest.raises(ValueError, match="finite"):
+            ST_UniversalMeasure.convert_from_xml("1e999in")
+
+    def it_raises_ValueError_on_an_unknown_universal_measure_unit(self):
+        with pytest.raises(ValueError, match="unit"):
+            ST_UniversalMeasure.convert_from_xml("12xx")
 
 
 class DescribeST_HpsMeasure:

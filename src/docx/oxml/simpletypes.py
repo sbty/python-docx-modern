@@ -10,6 +10,7 @@ schema.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from typing import TYPE_CHECKING, Any, Tuple
 
 from docx.exceptions import InvalidXmlError
@@ -17,6 +18,18 @@ from docx.shared import Emu, Pt, RGBColor, Twips
 
 if TYPE_CHECKING:
     from docx.shared import Length
+
+
+def _finite_float(str_value: str) -> float:
+    """Return `str_value` parsed as a float, raising |ValueError| if it is not finite.
+
+    Values like "INF" or "1E999" would otherwise surface later as |OverflowError| when
+    converted to an integer length.
+    """
+    value = float(str_value)
+    if not math.isfinite(value):
+        raise ValueError(f"measure must be a finite number, got '{str_value}'")
+    return value
 
 
 class BaseSimpleType:
@@ -316,7 +329,7 @@ class ST_HpsMeasure(XsdUnsignedLong):
         if "m" in str_value or "n" in str_value or "p" in str_value:
             return ST_UniversalMeasure.convert_from_xml(str_value)
         # -- tolerate fractional half-points, which some producers write --
-        return Pt(float(str_value) / 2.0)
+        return Pt(_finite_float(str_value) / 2.0)
 
     @classmethod
     def convert_to_xml(cls, value: int | Length) -> str:
@@ -364,7 +377,7 @@ class ST_SignedTwipsMeasure(XsdInt):
     def convert_from_xml(cls, str_value: str) -> Length:
         if "i" in str_value or "m" in str_value or "p" in str_value:
             return ST_UniversalMeasure.convert_from_xml(str_value)
-        return Twips(int(round(float(str_value))))
+        return Twips(int(round(_finite_float(str_value))))
 
     @classmethod
     def convert_to_xml(cls, value: int | Length) -> str:
@@ -405,7 +418,7 @@ class ST_TblWidthTwips(XsdInt):
 
     @classmethod
     def convert_from_xml(cls, str_value: str) -> int:
-        return int(round(float(str_value)))
+        return int(round(_finite_float(str_value)))
 
 
 class ST_TwipsMeasure(XsdUnsignedLong):
@@ -415,7 +428,7 @@ class ST_TwipsMeasure(XsdUnsignedLong):
             return ST_UniversalMeasure.convert_from_xml(str_value)
         # -- tolerate fractional twips, which some producers write, as ST_SignedTwipsMeasure
         # -- does --
-        return Twips(int(round(float(str_value))))
+        return Twips(int(round(_finite_float(str_value))))
 
     @classmethod
     def convert_to_xml(cls, value: int | Length) -> str:
@@ -428,7 +441,7 @@ class ST_UniversalMeasure(BaseSimpleType):
     @classmethod
     def convert_from_xml(cls, str_value: str) -> Emu:
         float_part, units_part = str_value[:-2], str_value[-2:]
-        quantity = float(float_part)
+        quantity = _finite_float(float_part)
         multiplier = {
             "mm": 36000,
             "cm": 360000,
@@ -436,7 +449,9 @@ class ST_UniversalMeasure(BaseSimpleType):
             "pt": 12700,
             "pc": 152400,
             "pi": 152400,
-        }[units_part]
+        }.get(units_part)
+        if multiplier is None:
+            raise ValueError(f"unknown unit '{units_part}' in measure '{str_value}'")
         return Emu(int(round(quantity * multiplier)))
 
 

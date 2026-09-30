@@ -14,6 +14,8 @@ Unreleased (python-docx-modern fork)
 - Fix #1539 Tolerate fractional twips in unsigned measures such as `w:pgMar/@w:right`
 - Tolerate fractional twips in table cell widths (`w:tcW`)
 - Fix #1475 Tolerate fractional half-point font sizes (`w:sz`)
+- Raise ValueError, not OverflowError or KeyError, for non-finite or unknown-unit
+  measure values in XML
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; add mypy strict checking for
