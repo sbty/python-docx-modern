@@ -106,6 +106,16 @@ class DescribeComments:
 
         assert comment is None, "expected None when no comment with that id exists"
 
+    def it_ensures_the_comment_styles_are_defined_when_adding_a_comment(
+        self, request: FixtureRequest
+    ):
+        comments_part_ = instance_mock(request, CommentsPart)
+        comments = Comments(cast(CT_Comments, element("w:comments")), comments_part_)
+
+        comments.add_comment()
+
+        comments_part_.ensure_comment_styles.assert_called_once_with()
+
     def it_can_add_a_new_comment(self, package_: Mock):
         comments_elm = cast(CT_Comments, element("w:comments"))
         comments_part = CommentsPart(

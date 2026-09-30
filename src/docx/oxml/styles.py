@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml.ns import nsdecls
+from docx.oxml.parser import parse_xml
 from docx.oxml.simpletypes import ST_DecimalNumber, ST_OnOff, ST_String
 from docx.oxml.xmlchemy import (
     BaseOxmlElement,
@@ -138,7 +142,7 @@ class CT_Style(BaseOxmlElement):
     customStyle = OptionalAttribute("w:customStyle", ST_OnOff)
 
     @property
-    def basedOn_val(self):
+    def basedOn_val(self) -> str | None:
         """Value of `w:basedOn/@w:val` or |None| if not present."""
         basedOn = self.basedOn
         if basedOn is None:
@@ -146,7 +150,7 @@ class CT_Style(BaseOxmlElement):
         return basedOn.val
 
     @basedOn_val.setter
-    def basedOn_val(self, value):
+    def basedOn_val(self, value: str | None) -> None:
         if value is None:
             self._remove_basedOn()
         else:
@@ -185,7 +189,7 @@ class CT_Style(BaseOxmlElement):
             locked.val = value
 
     @property
-    def name_val(self):
+    def name_val(self) -> str | None:
         """Value of ``<w:name>`` child or |None| if not present."""
         name = self.name
         if name is None:
@@ -193,7 +197,7 @@ class CT_Style(BaseOxmlElement):
         return name.val
 
     @name_val.setter
-    def name_val(self, value):
+    def name_val(self, value: str | None) -> None:
         self._remove_name()
         if value is not None:
             name = self._add_name()
@@ -224,7 +228,7 @@ class CT_Style(BaseOxmlElement):
             self._add_qFormat()
 
     @property
-    def semiHidden_val(self):
+    def semiHidden_val(self) -> bool:
         """Value of ``<w:semiHidden>`` child or |False| if not present."""
         semiHidden = self.semiHidden
         if semiHidden is None:
@@ -232,7 +236,7 @@ class CT_Style(BaseOxmlElement):
         return semiHidden.val
 
     @semiHidden_val.setter
-    def semiHidden_val(self, value):
+    def semiHidden_val(self, value: bool) -> None:
         self._remove_semiHidden()
         if bool(value) is True:
             semiHidden = self._add_semiHidden()
@@ -269,6 +273,32 @@ class CT_Style(BaseOxmlElement):
             unhideWhenUsed.val = value
 
 
+# -- built-in styles that comment markup refers to, as Word defines them; `w:basedOn` is
+# -- added from the document's own default style of the same type --
+_COMMENT_STYLES = (
+    (
+        "CommentReference",
+        "annotation reference",
+        WD_STYLE_TYPE.CHARACTER,
+        f'<w:style {nsdecls("w")} w:type="character" w:styleId="CommentReference">'
+        '<w:name w:val="annotation reference"/>'
+        '<w:uiPriority w:val="99"/><w:semiHidden/><w:unhideWhenUsed/>'
+        '<w:rPr><w:sz w:val="16"/><w:szCs w:val="16"/></w:rPr>'
+        "</w:style>",
+    ),
+    (
+        "CommentText",
+        "annotation text",
+        WD_STYLE_TYPE.PARAGRAPH,
+        f'<w:style {nsdecls("w")} w:type="paragraph" w:styleId="CommentText">'
+        '<w:name w:val="annotation text"/>'
+        '<w:uiPriority w:val="99"/><w:semiHidden/><w:unhideWhenUsed/>'
+        '<w:rPr><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr>'
+        "</w:style>",
+    ),
+)
+
+
 class CT_Styles(BaseOxmlElement):
     """``<w:styles>`` element, the root element of a styles part, i.e. styles.xml."""
 
@@ -289,7 +319,29 @@ class CT_Styles(BaseOxmlElement):
         style.name_val = name
         return style
 
-    def default_for(self, style_type):
+    def ensure_comment_styles(self) -> None:
+        """Add the built-in styles that comment markup refers to, when they are missing.
+
+        Comment reference runs use the "CommentReference" character style and comment
+        paragraphs use the "CommentText" paragraph style. The default template defines
+        neither, so without this the references dangle and Word formats them with default
+        properties.
+
+        A style is not added when the document already defines it, either under its usual
+        id or, as in localized templates, under another id with the same built-in name.
+        Each added style is based on the document's default style of its type, whatever
+        that style's id is.
+        """
+        for style_id, name, style_type, style_xml in _COMMENT_STYLES:
+            if self.get_by_id(style_id) is not None or self.get_by_name(name) is not None:
+                continue
+            style = cast(CT_Style, parse_xml(style_xml))
+            default_style = self.default_for(style_type)
+            if default_style is not None:
+                style.basedOn_val = default_style.styleId
+            self.append(style)
+
+    def default_for(self, style_type: WD_STYLE_TYPE) -> CT_Style | None:
         """Return `w:style[@w:type="*{style_type}*][-1]` or |None| if not found."""
         default_styles_for_type = [
             s for s in self._iter_styles() if s.type == style_type and s.default

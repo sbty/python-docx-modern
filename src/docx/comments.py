@@ -54,6 +54,9 @@ class Comments:
         `initials` is an optional attribute, set to the empty string by default. Passing |None|
         for the `initials` parameter causes that attribute to be omitted from the XML.
         """
+        # -- define the built-in styles the comment markup refers to, when missing (#1609) --
+        self._comments_part.ensure_comment_styles()
+
         comment_elm = self._comments_elm.add_comment()
         comment_elm.author = author
         comment_elm.initials = initials

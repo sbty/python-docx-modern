@@ -17,6 +17,7 @@ from docx.parts.story import StoryPart
 
 if TYPE_CHECKING:
     from docx.oxml.comments import CT_Comments
+    from docx.oxml.styles import CT_Styles
     from docx.package import Package
 
 
@@ -41,6 +42,15 @@ class CommentsPart(StoryPart):
         content_type = CT.WML_COMMENTS
         element = cast("CT_Comments", parse_xml(cls._default_comments_xml()))
         return cls(partname, content_type, element, package)
+
+    def ensure_comment_styles(self) -> None:
+        """Define the built-in styles that comment markup refers to, when missing.
+
+        New comments use the "CommentText" paragraph style and the "CommentReference"
+        character style, which the default template does not define. The styles live in the
+        styles part of the main document.
+        """
+        cast("CT_Styles", self._document_part.styles.element).ensure_comment_styles()
 
     @classmethod
     def _default_comments_xml(cls) -> bytes:

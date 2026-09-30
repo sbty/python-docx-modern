@@ -8,6 +8,7 @@ from behave.runner import Context
 from docx import Document
 from docx.comments import Comment, Comments
 from docx.drawing import Drawing
+from docx.enum.style import WD_STYLE_TYPE
 
 from helpers import test_docx
 
@@ -40,6 +41,12 @@ def given_a_document_having_a_comments_part(context: Context):
     context.document = Document(test_docx("comments-rich-para"))
 
 
+@given("a default document having a paragraph with a run")
+def given_a_default_document_having_a_paragraph_with_a_run(context: Context):
+    context.document = Document()
+    context.document.add_paragraph("Comment anchor.")
+
+
 @given("a document having no comments part")
 def given_a_document_having_no_comments_part(context: Context):
     context.document = Document(test_docx("doc-default"))
@@ -51,6 +58,11 @@ def given_a_document_having_no_comments_part(context: Context):
 @when('I assign "{author}" to comment.author')
 def when_I_assign_author_to_comment_author(context: Context, author: str):
     context.comment.author = author
+
+
+@when("I assign comment = document.comments.add_comment()")
+def when_I_assign_comment_eq_document_comments_add_comment(context: Context):
+    context.comment = context.document.comments.add_comment()
 
 
 @when("I assign comment = comments.add_comment()")
@@ -183,6 +195,18 @@ def then_comments_get_comment_id_eq_comment(context: Context, id: str):
     assert comment.comment_id == comment_id, (
         f"expected comment_id '{comment_id}', got '{comment.comment_id}'"
     )
+
+
+@then('the document defines the "{style_id}" {style_type} style')
+def then_the_document_defines_the_style(context: Context, style_id: str, style_type: str):
+    styles = context.document.styles
+    style = next((s for s in styles if s.style_id == style_id), None)
+    assert style is not None, f"expected style '{style_id}' in styles.xml"
+    expected_type = {
+        "character": WD_STYLE_TYPE.CHARACTER,
+        "paragraph": WD_STYLE_TYPE.PARAGRAPH,
+    }[style_type]
+    assert style.type == expected_type, f"expected {expected_type}, got {style.type}"
 
 
 @then("document.comments is a Comments object")
