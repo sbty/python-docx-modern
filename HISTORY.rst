@@ -21,8 +21,8 @@ Unreleased (python-docx-modern fork)
   the "CommentReference" and "CommentText" styles the markup refers to when the
   document lacks them
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
-- `Hyperlink` now derives from `StoryChild` (like `Run` and `Paragraph`) rather than
-  `Parented`; behavior is unchanged
+- `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
+  `Paragraph`) rather than `Parented`; behavior is unchanged
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; add mypy strict checking for
   migrated modules

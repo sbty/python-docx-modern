@@ -5,14 +5,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from docx.oxml.text.pagebreak import CT_LastRenderedPageBreak
-from docx.shared import Parented
+from docx.shared import StoryChild
 
 if TYPE_CHECKING:
     import docx.types as t
     from docx.text.paragraph import Paragraph
 
 
-class RenderedPageBreak(Parented):
+class RenderedPageBreak(StoryChild):
     """A page-break inserted by Word during page-layout for print or display purposes.
 
     This usually does not correspond to a "hard" page-break inserted by the document
@@ -39,7 +39,7 @@ class RenderedPageBreak(Parented):
         self,
         lastRenderedPageBreak: CT_LastRenderedPageBreak,
         parent: t.ProvidesStoryPart,
-    ):
+    ) -> None:
         super().__init__(parent)
         self._element = lastRenderedPageBreak
         self._lastRenderedPageBreak = lastRenderedPageBreak
