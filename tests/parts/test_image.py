@@ -9,6 +9,7 @@ from docx.opc.packuri import PackURI
 from docx.opc.part import PartFactory
 from docx.package import Package
 from docx.parts.image import ImagePart
+from docx.shared import Inches
 
 from ..unitutil.file import test_file
 from ..unitutil.mock import ANY, initializer_mock, instance_mock, method_mock
@@ -37,6 +38,14 @@ class DescribeImagePart:
         image_part, cx, cy = dimensions_fixture
         assert image_part.default_cx == cx
         assert image_part.default_cy == cy
+
+    def it_uses_the_vertical_dpi_for_its_default_height(self, image_):
+        image_.px_width, image_.px_height = 300, 200
+        image_.horz_dpi, image_.vert_dpi = 100, 200
+        image_part = ImagePart(PackURI("/word/media/image1.png"), CT.PNG, b"", image_)
+
+        assert image_part.default_cx == Inches(3)
+        assert image_part.default_cy == Inches(1)
 
     def it_knows_its_filename(self, filename_fixture):
         image_part, expected_filename = filename_fixture

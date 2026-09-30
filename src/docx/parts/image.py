@@ -40,8 +40,8 @@ class ImagePart(Part):
         """Native height of this image, calculated from its height in pixels and
         vertical dots per inch (dpi)."""
         px_height = self.image.px_height
-        horz_dpi = self.image.horz_dpi
-        height_in_emu = int(round(914400 * px_height / horz_dpi))
+        vert_dpi = self.image.vert_dpi
+        height_in_emu = int(round(914400 * px_height / vert_dpi))
         return Emu(height_in_emu)
 
     @property
