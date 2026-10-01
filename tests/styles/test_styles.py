@@ -1,5 +1,7 @@
 """Unit test suite for the docx.styles.styles module."""
 
+from typing import cast
+
 import pytest
 
 from docx.enum.style import WD_STYLE_TYPE
@@ -73,9 +75,9 @@ class DescribeStyles:
     def it_can_get_a_style_of_type_by_id(self, _get_by_id_, style_):
         style_id, style_type = 42, 7
         _get_by_id_.return_value = style_
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
 
-        style = styles.get_by_id(style_id, style_type)
+        style = styles.get_by_id(style_id, style_type)  # pyright: ignore[reportArgumentType]
 
         _get_by_id_.assert_called_once_with(styles, style_id, style_type)
         assert style is style_
@@ -83,20 +85,20 @@ class DescribeStyles:
     def but_it_returns_the_default_style_for_style_id_None(self, default_, style_):
         style_type = 17
         default_.return_value = style_
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
 
-        style = styles.get_by_id(None, style_type)
+        style = styles.get_by_id(None, style_type)  # pyright: ignore[reportArgumentType]
 
         default_.assert_called_once_with(styles, style_type)
         assert style is style_
 
     def it_can_get_a_style_id_from_a_style(self, _get_style_id_from_style_):
-        style = BaseStyle(None)
+        style = BaseStyle(None)  # pyright: ignore[reportArgumentType]
         style_type = 22
         _get_style_id_from_style_.return_value = "StyleId"
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
 
-        style_id = styles.get_style_id(style, style_type)
+        style_id = styles.get_style_id(style, style_type)  # pyright: ignore[reportArgumentType]
 
         _get_style_id_from_style_.assert_called_once_with(styles, style, style_type)
         assert style_id == "StyleId"
@@ -104,17 +106,17 @@ class DescribeStyles:
     def and_it_can_get_a_style_id_from_a_style_name(self, _get_style_id_from_name_):
         style_type = 22
         _get_style_id_from_name_.return_value = "StyleId"
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
 
-        style_id = styles.get_style_id("Style Name", style_type)
+        style_id = styles.get_style_id("Style Name", style_type)  # pyright: ignore[reportArgumentType]
 
         _get_style_id_from_name_.assert_called_once_with(styles, "Style Name", style_type)
         assert style_id == "StyleId"
 
     def but_it_returns_None_for_a_style_or_name_of_None(self):
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
 
-        style_id = styles.get_style_id(None, style_type=22)
+        style_id = styles.get_style_id(None, style_type=22)  # pyright: ignore[reportArgumentType]
 
         assert style_id is None
 
@@ -132,9 +134,9 @@ class DescribeStyles:
         style_name, style_type, style_id_ = "Foo Bar", 1, "FooBar"
         _getitem_.return_value = style_
         _get_style_id_from_style_.return_value = style_id_
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
 
-        style_id = styles._get_style_id_from_name(style_name, style_type)
+        style_id = styles._get_style_id_from_name(style_name, style_type)  # pyright: ignore[reportArgumentType]
 
         styles.__getitem__.assert_called_once_with(styles, style_name)
         _get_style_id_from_style_.assert_called_once_with(styles, style_, style_type)
@@ -186,7 +188,7 @@ class DescribeStyles:
 
     @pytest.fixture
     def add_raises_fixture(self, _getitem_):
-        styles = Styles(element("w:styles/w:style/w:name{w:val=heading 1}"))
+        styles = Styles(cast(CT_Styles, element("w:styles/w:style/w:name{w:val=heading 1}")))
         name = "Heading 1"
         return styles, name
 
@@ -261,7 +263,7 @@ class DescribeStyles:
     def getitem_id_fixture(self, request):
         styles_cxml_tmpl, style_idx = request.param
         styles_cxml = styles_cxml_tmpl % "w:type=paragraph"
-        styles = Styles(element(styles_cxml))
+        styles = Styles(cast(CT_Styles, element(styles_cxml)))
         expected_element = styles._element[style_idx]
         return styles, "Foobar", expected_element
 
@@ -275,7 +277,7 @@ class DescribeStyles:
     def getitem_name_fixture(self, request):
         styles_cxml_tmpl, key, style_idx = request.param
         styles_cxml = styles_cxml_tmpl % "{w:type=character}"
-        styles = Styles(element(styles_cxml))
+        styles = Styles(cast(CT_Styles, element(styles_cxml)))
         expected_element = styles._element[style_idx]
         return styles, key, expected_element
 
@@ -287,13 +289,13 @@ class DescribeStyles:
     )
     def get_raises_fixture(self, request):
         styles_cxml = request.param
-        styles = Styles(element(styles_cxml))
+        styles = Styles(cast(CT_Styles, element(styles_cxml)))
         return styles, "bar"
 
     @pytest.fixture(params=[True, False])
     def id_style_fixture(self, request, default_, style_):
         style_is_default = request.param
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
         style_id, style_type = "FooBar", 1
         default_.return_value = style_ if style_is_default else None
         style_.style_id, style_.type = style_id, style_type
@@ -302,7 +304,7 @@ class DescribeStyles:
 
     @pytest.fixture
     def id_style_raises_fixture(self, style_):
-        styles = Styles(None)
+        styles = Styles(None)  # pyright: ignore[reportArgumentType]
         style_.type = 1
         style_type = 2
         return styles, style_, style_type
@@ -317,7 +319,7 @@ class DescribeStyles:
     )
     def in_fixture(self, request):
         styles_cxml, name, expected_value = request.param
-        styles = Styles(element(styles_cxml))
+        styles = Styles(cast(CT_Styles, element(styles_cxml)))
         return styles, name, expected_value
 
     @pytest.fixture(
@@ -338,7 +340,7 @@ class DescribeStyles:
 
     @pytest.fixture
     def latent_styles_fixture(self, LatentStyles_, latent_styles_):
-        styles = Styles(element("w:styles/w:latentStyles"))
+        styles = Styles(cast(CT_Styles, element("w:styles/w:latentStyles")))
         return styles, LatentStyles_, latent_styles_
 
     @pytest.fixture(
@@ -351,7 +353,7 @@ class DescribeStyles:
     )
     def len_fixture(self, request):
         styles_cxml, expected_value = request.param
-        styles = Styles(element(styles_cxml))
+        styles = Styles(cast(CT_Styles, element(styles_cxml)))
         return styles, expected_value
 
     # fixture components ---------------------------------------------

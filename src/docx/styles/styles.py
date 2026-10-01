@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from warnings import warn
 
 from docx.enum.style import WD_STYLE_TYPE
@@ -19,40 +20,42 @@ class Styles(ElementProxy):
     and dictionary-style access by style name.
     """
 
-    def __init__(self, styles: CT_Styles):
+    def __init__(self, styles: CT_Styles) -> None:
         super().__init__(styles)
-        self._element = styles
+        # -- `._element` (inherited, loosely typed) and `._styles_elm` are the same
+        # -- `w:styles` element --
+        self._element = self._styles_elm = styles
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         """Enables `in` operator on style name."""
         internal_name = BabelFish.ui2internal(name)
-        return any(style.name_val == internal_name for style in self._element.style_lst)
+        return any(style.name_val == internal_name for style in self._styles_elm.style_lst)
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> BaseStyle:
         """Enables dictionary-style access by UI name.
 
         Lookup by style id is deprecated, triggers a warning, and will be removed in a
         near-future release.
         """
-        style_elm = self._element.get_by_name(BabelFish.ui2internal(key))
+        style_elm = self._styles_elm.get_by_name(BabelFish.ui2internal(key))
         if style_elm is not None:
             return StyleFactory(style_elm)
 
-        style_elm = self._element.get_by_id(key)
+        style_elm = self._styles_elm.get_by_id(key)
         if style_elm is not None:
             msg = "style lookup by style_id is deprecated. Use style name as key instead."
             warn(msg, UserWarning, stacklevel=2)
             return StyleFactory(style_elm)
 
-        raise KeyError("no style with name '%s'" % key)
+        raise KeyError(f"no style with name '{key}'")
 
-    def __iter__(self):
-        return (StyleFactory(style) for style in self._element.style_lst)
+    def __iter__(self) -> Iterator[BaseStyle]:
+        return (StyleFactory(style) for style in self._styles_elm.style_lst)
 
-    def __len__(self):
-        return len(self._element.style_lst)
+    def __len__(self) -> int:
+        return len(self._styles_elm.style_lst)
 
-    def add_style(self, name, style_type, builtin=False):
+    def add_style(self, name: str, style_type: WD_STYLE_TYPE, builtin: bool = False) -> BaseStyle:
         """Return a newly added style object of `style_type` and identified by `name`.
 
         A builtin style can be defined by passing True for the optional `builtin`
@@ -60,19 +63,19 @@ class Styles(ElementProxy):
         """
         style_name = BabelFish.ui2internal(name)
         if style_name in self:
-            raise ValueError("document already contains style '%s'" % name)
-        style = self._element.add_style_of_type(style_name, style_type, builtin)
+            raise ValueError(f"document already contains style '{name}'")
+        style = self._styles_elm.add_style_of_type(style_name, style_type, builtin)
         return StyleFactory(style)
 
-    def default(self, style_type: WD_STYLE_TYPE):
+    def default(self, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
         """Return the default style for `style_type` or |None| if no default is defined
         for that type (not common)."""
-        style = self._element.default_for(style_type)
+        style = self._styles_elm.default_for(style_type)
         if style is None:
             return None
         return StyleFactory(style)
 
-    def get_by_id(self, style_id: str | None, style_type: WD_STYLE_TYPE):
+    def get_by_id(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
         """Return the style of `style_type` matching `style_id`.
 
         Returns the default for `style_type` if `style_id` is not found or is |None|, or
@@ -82,7 +85,9 @@ class Styles(ElementProxy):
             return self.default(style_type)
         return self._get_by_id(style_id, style_type)
 
-    def get_style_id(self, style_or_name, style_type):
+    def get_style_id(
+        self, style_or_name: BaseStyle | str | None, style_type: WD_STYLE_TYPE
+    ) -> str | None:
         """Return the id of the style corresponding to `style_or_name`, or |None| if
         `style_or_name` is |None|.
 
@@ -98,19 +103,19 @@ class Styles(ElementProxy):
             return self._get_style_id_from_name(style_or_name, style_type)
 
     @property
-    def latent_styles(self):
+    def latent_styles(self) -> LatentStyles:
         """A |LatentStyles| object providing access to the default behaviors for latent
         styles and the collection of |_LatentStyle| objects that define overrides of
         those defaults for a particular named latent style."""
-        return LatentStyles(self._element.get_or_add_latentStyles())
+        return LatentStyles(self._styles_elm.get_or_add_latentStyles())
 
-    def _get_by_id(self, style_id: str | None, style_type: WD_STYLE_TYPE):
+    def _get_by_id(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
         """Return the style of `style_type` matching `style_id`.
 
         Returns the default for `style_type` if `style_id` is not found or if the style
         having `style_id` is not of `style_type`.
         """
-        style = self._element.get_by_id(style_id) if style_id else None
+        style = self._styles_elm.get_by_id(style_id) if style_id else None
         if style is None or style.type != style_type:
             return self.default(style_type)
         return StyleFactory(style)
@@ -130,7 +135,7 @@ class Styles(ElementProxy):
         Raises |ValueError| if style is not of `style_type`.
         """
         if style.type != style_type:
-            raise ValueError("assigned style is type %s, need type %s" % (style.type, style_type))
+            raise ValueError(f"assigned style is type {style.type}, need type {style_type}")
         if style == self.default(style_type):
             return None
         return style.style_id

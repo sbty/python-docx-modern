@@ -1,7 +1,10 @@
 """Unit test suite for the docx.styles.latent module."""
 
+from typing import cast
+
 import pytest
 
+from docx.oxml.styles import CT_LatentStyles
 from docx.styles.latent import LatentStyles, _LatentStyle
 
 from ..unitutil.cxml import element, xml
@@ -193,7 +196,7 @@ class DescribeLatentStyles:
 
     @pytest.fixture
     def add_fixture(self):
-        latent_styles = LatentStyles(element("w:latentStyles"))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element("w:latentStyles")))
         name = "Heading 1"
         expected_xml = xml("w:latentStyles/w:lsdException{w:name=heading 1}")
         return latent_styles, name, expected_xml
@@ -216,7 +219,7 @@ class DescribeLatentStyles:
     )
     def bool_prop_get_fixture(self, request):
         latentStyles_cxml, prop_name, expected_value = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         return latent_styles, prop_name, expected_value
 
     @pytest.fixture(
@@ -261,7 +264,7 @@ class DescribeLatentStyles:
     )
     def bool_prop_set_fixture(self, request):
         latentStyles_cxml, prop_name, value, expected_cxml = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         expected_xml = xml(expected_cxml)
         return latent_styles, prop_name, value, expected_xml
 
@@ -273,7 +276,7 @@ class DescribeLatentStyles:
     )
     def count_get_fixture(self, request):
         latentStyles_cxml, expected_value = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         return latent_styles, expected_value
 
     @pytest.fixture(
@@ -285,7 +288,7 @@ class DescribeLatentStyles:
     )
     def count_set_fixture(self, request):
         latentStyles_cxml, value, expected_cxml = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         expected_xml = xml(expected_cxml)
         return latent_styles, value, expected_xml
 
@@ -300,14 +303,14 @@ class DescribeLatentStyles:
     def getitem_fixture(self, request):
         cxml, name, idx = request.param
         latentStyles_cxml = "w:latentStyles/(%s)" % cxml
-        latentStyles = element(latentStyles_cxml)
+        latentStyles = cast(CT_LatentStyles, element(latentStyles_cxml))
         lsdException = latentStyles[idx]
         latent_styles = LatentStyles(latentStyles)
         return latent_styles, name, lsdException
 
     @pytest.fixture
     def getitem_raises_fixture(self):
-        latent_styles = LatentStyles(element("w:latentStyles"))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element("w:latentStyles")))
         return latent_styles, "Foobar"
 
     @pytest.fixture(
@@ -319,7 +322,7 @@ class DescribeLatentStyles:
     )
     def iter_fixture(self, request):
         latentStyles_cxml, count = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         return latent_styles, count
 
     @pytest.fixture(
@@ -331,7 +334,7 @@ class DescribeLatentStyles:
     )
     def len_fixture(self, request):
         latentStyles_cxml, count = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         return latent_styles, count
 
     @pytest.fixture(
@@ -342,7 +345,7 @@ class DescribeLatentStyles:
     )
     def priority_get_fixture(self, request):
         latentStyles_cxml, expected_value = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         return latent_styles, expected_value
 
     @pytest.fixture(
@@ -358,6 +361,6 @@ class DescribeLatentStyles:
     )
     def priority_set_fixture(self, request):
         latentStyles_cxml, value, expected_cxml = request.param
-        latent_styles = LatentStyles(element(latentStyles_cxml))
+        latent_styles = LatentStyles(cast(CT_LatentStyles, element(latentStyles_cxml)))
         expected_xml = xml(expected_cxml)
         return latent_styles, value, expected_xml

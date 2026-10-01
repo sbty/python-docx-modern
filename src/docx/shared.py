@@ -289,7 +289,7 @@ class ElementProxy:
         self._element = element
         self._parent = parent
 
-    def __eq__(self, other: object):
+    def __eq__(self, other: object) -> bool:
         """Return |True| if this proxy object refers to the same oxml element as does
         `other`.
 
@@ -301,7 +301,7 @@ class ElementProxy:
             return False
         return self._element is other._element
 
-    def __ne__(self, other: object):
+    def __ne__(self, other: object) -> bool:
         if not isinstance(other, ElementProxy):
             return True
         return self._element is not other._element

@@ -1,7 +1,16 @@
 """Latent style-related objects."""
 
+from __future__ import annotations
+
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, cast
+
 from docx.shared import ElementProxy
 from docx.styles import BabelFish
+
+if TYPE_CHECKING:
+    import docx.types as t
+    from docx.oxml.styles import CT_LatentStyles, CT_LsdException
 
 
 class LatentStyles(ElementProxy):
@@ -9,55 +18,61 @@ class LatentStyles(ElementProxy):
     to the collection of |_LatentStyle| objects that define overrides of those defaults
     for a particular named latent style."""
 
-    def __getitem__(self, key):
+    def __init__(
+        self, latentStyles: CT_LatentStyles, parent: t.ProvidesXmlPart | None = None
+    ) -> None:
+        super().__init__(latentStyles, parent)
+        self._latentStyles = latentStyles
+
+    def __getitem__(self, key: str) -> _LatentStyle:
         """Enables dictionary-style access to a latent style by name."""
         style_name = BabelFish.ui2internal(key)
-        lsdException = self._element.get_by_name(style_name)
+        lsdException = self._latentStyles.get_by_name(style_name)
         if lsdException is None:
-            raise KeyError("no latent style with name '%s'" % key)
+            raise KeyError(f"no latent style with name '{key}'")
         return _LatentStyle(lsdException)
 
-    def __iter__(self):
-        return (_LatentStyle(ls) for ls in self._element.lsdException_lst)
+    def __iter__(self) -> Iterator[_LatentStyle]:
+        return (_LatentStyle(ls) for ls in self._latentStyles.lsdException_lst)
 
-    def __len__(self):
-        return len(self._element.lsdException_lst)
+    def __len__(self) -> int:
+        return len(self._latentStyles.lsdException_lst)
 
-    def add_latent_style(self, name):
+    def add_latent_style(self, name: str) -> _LatentStyle:
         """Return a newly added |_LatentStyle| object to override the inherited defaults
         defined in this latent styles object for the built-in style having `name`."""
-        lsdException = self._element.add_lsdException()
+        lsdException = self._latentStyles.add_lsdException()
         lsdException.name = BabelFish.ui2internal(name)
         return _LatentStyle(lsdException)
 
     @property
-    def default_priority(self):
+    def default_priority(self) -> int | None:
         """Integer between 0 and 99 inclusive specifying the default sort order for
         latent styles in style lists and the style gallery.
 
         |None| if no value is assigned, which causes Word to use the default value 99.
         """
-        return self._element.defUIPriority
+        return self._latentStyles.defUIPriority
 
     @default_priority.setter
-    def default_priority(self, value):
-        self._element.defUIPriority = value
+    def default_priority(self, value: int | None) -> None:
+        self._latentStyles.defUIPriority = value
 
     @property
-    def default_to_hidden(self):
+    def default_to_hidden(self) -> bool:
         """Boolean specifying whether the default behavior for latent styles is to be
         hidden.
 
         A hidden style does not appear in the recommended list or in the style gallery.
         """
-        return self._element.bool_prop("defSemiHidden")
+        return self._latentStyles.bool_prop("defSemiHidden")
 
     @default_to_hidden.setter
-    def default_to_hidden(self, value):
-        self._element.set_bool_prop("defSemiHidden", value)
+    def default_to_hidden(self, value: bool) -> None:
+        self._latentStyles.set_bool_prop("defSemiHidden", value)
 
     @property
-    def default_to_locked(self):
+    def default_to_locked(self) -> bool:
         """Boolean specifying whether the default behavior for latent styles is to be
         locked.
 
@@ -65,34 +80,34 @@ class LatentStyles(ElementProxy):
         cannot be applied to document content. This behavior is only active when
         formatting protection is turned on for the document (via the Developer menu).
         """
-        return self._element.bool_prop("defLockedState")
+        return self._latentStyles.bool_prop("defLockedState")
 
     @default_to_locked.setter
-    def default_to_locked(self, value):
-        self._element.set_bool_prop("defLockedState", value)
+    def default_to_locked(self, value: bool) -> None:
+        self._latentStyles.set_bool_prop("defLockedState", value)
 
     @property
-    def default_to_quick_style(self):
+    def default_to_quick_style(self) -> bool:
         """Boolean specifying whether the default behavior for latent styles is to
         appear in the style gallery when not hidden."""
-        return self._element.bool_prop("defQFormat")
+        return self._latentStyles.bool_prop("defQFormat")
 
     @default_to_quick_style.setter
-    def default_to_quick_style(self, value):
-        self._element.set_bool_prop("defQFormat", value)
+    def default_to_quick_style(self, value: bool) -> None:
+        self._latentStyles.set_bool_prop("defQFormat", value)
 
     @property
-    def default_to_unhide_when_used(self):
+    def default_to_unhide_when_used(self) -> bool:
         """Boolean specifying whether the default behavior for latent styles is to be
         unhidden when first applied to content."""
-        return self._element.bool_prop("defUnhideWhenUsed")
+        return self._latentStyles.bool_prop("defUnhideWhenUsed")
 
     @default_to_unhide_when_used.setter
-    def default_to_unhide_when_used(self, value):
-        self._element.set_bool_prop("defUnhideWhenUsed", value)
+    def default_to_unhide_when_used(self, value: bool) -> None:
+        self._latentStyles.set_bool_prop("defUnhideWhenUsed", value)
 
     @property
-    def load_count(self):
+    def load_count(self) -> int | None:
         """Integer specifying the number of built-in styles to initialize to the
         defaults specified in this |LatentStyles| object.
 
@@ -100,11 +115,11 @@ class LatentStyles(ElementProxy):
         template sets this value to 276, accounting for the built-in styles in Word
         2010.
         """
-        return self._element.count
+        return self._latentStyles.count
 
     @load_count.setter
-    def load_count(self, value):
-        self._element.count = value
+    def load_count(self, value: int | None) -> None:
+        self._latentStyles.count = value
 
 
 class _LatentStyle(ElementProxy):
@@ -116,7 +131,12 @@ class _LatentStyle(ElementProxy):
     `w:latentStyles` element.
     """
 
-    def delete(self):
+    @property
+    def _lsdException(self) -> CT_LsdException:
+        """The `w:lsdException` element, typed (`._element` is None once deleted)."""
+        return cast("CT_LsdException", self._element)
+
+    def delete(self) -> None:
         """Remove this latent style definition such that the defaults defined in the
         containing |LatentStyles| object provide the effective value for each of its
         attributes.
@@ -124,75 +144,79 @@ class _LatentStyle(ElementProxy):
         Attempting to access any attributes on this object after calling this method
         will raise |AttributeError|.
         """
-        self._element.delete()
-        self._element = None
+        self._lsdException.delete()
+        # -- later attribute access raises AttributeError, as documented above --
+        # -- setattr rather than plain assignment: mypy rejects assigning None to the
+        # -- inherited `_element` type, while pyright treats a `type: ignore` there as
+        # -- unnecessary --
+        setattr(self, "_element", None)  # noqa: B010
 
     @property
-    def hidden(self):
+    def hidden(self) -> bool | None:
         """Tri-state value specifying whether this latent style should appear in the
         recommended list.
 
         |None| indicates the effective value is inherited from the parent
         ``<w:latentStyles>`` element.
         """
-        return self._element.on_off_prop("semiHidden")
+        return self._lsdException.on_off_prop("semiHidden")
 
     @hidden.setter
-    def hidden(self, value):
-        self._element.set_on_off_prop("semiHidden", value)
+    def hidden(self, value: bool | None) -> None:
+        self._lsdException.set_on_off_prop("semiHidden", value)
 
     @property
-    def locked(self):
+    def locked(self) -> bool | None:
         """Tri-state value specifying whether this latent styles is locked.
 
         A locked style does not appear in the styles panel or the style gallery and
         cannot be applied to document content. This behavior is only active when
         formatting protection is turned on for the document (via the Developer menu).
         """
-        return self._element.on_off_prop("locked")
+        return self._lsdException.on_off_prop("locked")
 
     @locked.setter
-    def locked(self, value):
-        self._element.set_on_off_prop("locked", value)
+    def locked(self, value: bool | None) -> None:
+        self._lsdException.set_on_off_prop("locked", value)
 
     @property
-    def name(self):
+    def name(self) -> str:
         """The name of the built-in style this exception applies to."""
-        return BabelFish.internal2ui(self._element.name)
+        return BabelFish.internal2ui(self._lsdException.name)
 
     @property
-    def priority(self):
+    def priority(self) -> int | None:
         """The integer sort key for this latent style in the Word UI."""
-        return self._element.uiPriority
+        return self._lsdException.uiPriority
 
     @priority.setter
-    def priority(self, value):
-        self._element.uiPriority = value
+    def priority(self, value: int | None) -> None:
+        self._lsdException.uiPriority = value
 
     @property
-    def quick_style(self):
+    def quick_style(self) -> bool | None:
         """Tri-state value specifying whether this latent style should appear in the
         Word styles gallery when not hidden.
 
         |None| indicates the effective value should be inherited from the default values
         in its parent |LatentStyles| object.
         """
-        return self._element.on_off_prop("qFormat")
+        return self._lsdException.on_off_prop("qFormat")
 
     @quick_style.setter
-    def quick_style(self, value):
-        self._element.set_on_off_prop("qFormat", value)
+    def quick_style(self, value: bool | None) -> None:
+        self._lsdException.set_on_off_prop("qFormat", value)
 
     @property
-    def unhide_when_used(self):
+    def unhide_when_used(self) -> bool | None:
         """Tri-state value specifying whether this style should have its :attr:`hidden`
         attribute set |False| the next time the style is applied to content.
 
         |None| indicates the effective value should be inherited from the default
         specified by its parent |LatentStyles| object.
         """
-        return self._element.on_off_prop("unhideWhenUsed")
+        return self._lsdException.on_off_prop("unhideWhenUsed")
 
     @unhide_when_used.setter
-    def unhide_when_used(self, value):
-        self._element.set_on_off_prop("unhideWhenUsed", value)
+    def unhide_when_used(self, value: bool | None) -> None:
+        self._lsdException.set_on_off_prop("unhideWhenUsed", value)
