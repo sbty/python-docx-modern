@@ -5,7 +5,13 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Callable, cast
 
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ROW_HEIGHT_RULE, WD_TABLE_DIRECTION
+from docx.enum.table import (
+    WD_CELL_VERTICAL_ALIGNMENT,
+    WD_ROW_HEIGHT_RULE,
+    WD_TABLE_ALIGNMENT,
+    WD_TABLE_DIRECTION,
+)
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.exceptions import InvalidSpanError
 from docx.oxml.ns import nsdecls, qn
 from docx.oxml.parser import parse_xml
@@ -30,8 +36,6 @@ from docx.oxml.xmlchemy import (
 from docx.shared import Emu, Length, Twips
 
 if TYPE_CHECKING:
-    from docx.enum.table import WD_TABLE_ALIGNMENT
-    from docx.enum.text import WD_ALIGN_PARAGRAPH
     from docx.oxml.shared import CT_OnOff, CT_String
     from docx.oxml.text.parfmt import CT_Jc
 
@@ -343,11 +347,17 @@ class CT_TblPr(BaseOxmlElement):
 
     @property
     def alignment(self) -> WD_TABLE_ALIGNMENT | None:
-        """Horizontal alignment of table, |None| if `./w:jc` is not present."""
+        """Horizontal alignment of table, |None| if `./w:jc` is not present.
+
+        `w:jc` is parsed as a paragraph justification, so it is mapped to the table
+        alignment with the same XML value. A value that is not a table alignment, such as
+        "both", also reads as |None|.
+        """
         jc = self.jc
         if jc is None:
             return None
-        return cast("WD_TABLE_ALIGNMENT | None", jc.val)
+        xml_value = WD_ALIGN_PARAGRAPH.to_xml(jc.val)
+        return next((a for a in WD_TABLE_ALIGNMENT if a.xml_value == xml_value), None)
 
     @alignment.setter
     def alignment(self, value: WD_TABLE_ALIGNMENT | None):
@@ -355,7 +365,7 @@ class CT_TblPr(BaseOxmlElement):
         if value is None:
             return
         jc = self.get_or_add_jc()
-        jc.val = cast("WD_ALIGN_PARAGRAPH", value)
+        jc.val = WD_ALIGN_PARAGRAPH.from_xml(WD_TABLE_ALIGNMENT.to_xml(value))
 
     @property
     def autofit(self) -> bool:

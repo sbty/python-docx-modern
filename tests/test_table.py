@@ -102,13 +102,17 @@ class DescribeTable:
             ("w:tbl/w:tblPr/w:jc{w:val=center}", WD_TABLE_ALIGNMENT.CENTER),
             ("w:tbl/w:tblPr/w:jc{w:val=right}", WD_TABLE_ALIGNMENT.RIGHT),
             ("w:tbl/w:tblPr/w:jc{w:val=left}", WD_TABLE_ALIGNMENT.LEFT),
+            # -- a paragraph-only justification is not a table alignment --
+            ("w:tbl/w:tblPr/w:jc{w:val=both}", None),
         ],
     )
     def it_knows_its_alignment_setting(
         self, tbl_cxml: str, expected_value: WD_TABLE_ALIGNMENT | None, document_: Mock
     ):
         table = Table(cast(CT_Tbl, element(tbl_cxml)), document_)
-        assert table.alignment == expected_value
+        # -- identity, not equality: WD_PARAGRAPH_ALIGNMENT members share values with
+        # -- WD_TABLE_ALIGNMENT (CENTER == 1 in both), which hid the wrong enum type --
+        assert table.alignment is expected_value
 
     @pytest.mark.parametrize(
         ("tbl_cxml", "new_value", "expected_cxml"),

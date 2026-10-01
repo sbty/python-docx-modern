@@ -21,6 +21,9 @@ Unreleased (python-docx-modern fork)
   the "CommentReference" and "CommentText" styles the markup refers to when the
   document lacks them
 - Fix `Table.table_direction` returning a bool instead of a `WD_TABLE_DIRECTION` member
+- Fix `Table.alignment` returning a `WD_PARAGRAPH_ALIGNMENT` member instead of a
+  `WD_TABLE_ALIGNMENT` member; a paragraph-only `w:jc` value such as "both" now reads
+  as `None`
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged
