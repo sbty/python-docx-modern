@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator, List, Sequence, overload
+from collections.abc import Iterator, Sequence
+from typing import TYPE_CHECKING, cast, overload
 
 from docx.blkcntnr import BlockItemContainer
 from docx.enum.section import WD_HEADER_FOOTER
@@ -13,9 +14,10 @@ from docx.table import Table
 from docx.text.paragraph import Paragraph
 
 if TYPE_CHECKING:
+    from docx.blkcntnr import BlockItemElement
     from docx.enum.section import WD_ORIENTATION, WD_SECTION_START
     from docx.oxml.document import CT_Document
-    from docx.oxml.section import CT_SectPr
+    from docx.oxml.section import CT_HdrFtr, CT_SectPr
     from docx.parts.document import DocumentPart
     from docx.parts.story import StoryPart
     from docx.shared import Length
@@ -27,8 +29,8 @@ class Section:
     Also provides access to headers and footers.
     """
 
-    def __init__(self, sectPr: CT_SectPr, document_part: DocumentPart):
-        super(Section, self).__init__()
+    def __init__(self, sectPr: CT_SectPr, document_part: DocumentPart) -> None:
+        super().__init__()
         self._sectPr = sectPr
         self._document_part = document_part
 
@@ -42,7 +44,7 @@ class Section:
         return self._sectPr.bottom_margin
 
     @bottom_margin.setter
-    def bottom_margin(self, value: int | Length | None):
+    def bottom_margin(self, value: int | Length | None) -> None:
         self._sectPr.bottom_margin = value
 
     @property
@@ -55,7 +57,7 @@ class Section:
         return self._sectPr.titlePg_val
 
     @different_first_page_header_footer.setter
-    def different_first_page_header_footer(self, value: bool):
+    def different_first_page_header_footer(self, value: bool) -> None:
         self._sectPr.titlePg_val = value
 
     @property
@@ -112,7 +114,7 @@ class Section:
         return self._sectPr.footer
 
     @footer_distance.setter
-    def footer_distance(self, value: int | Length | None):
+    def footer_distance(self, value: int | Length | None) -> None:
         self._sectPr.footer = value
 
     @property
@@ -129,7 +131,7 @@ class Section:
         return self._sectPr.gutter
 
     @gutter.setter
-    def gutter(self, value: int | Length | None):
+    def gutter(self, value: int | Length | None) -> None:
         self._sectPr.gutter = value
 
     @lazyproperty
@@ -151,7 +153,7 @@ class Section:
         return self._sectPr.header
 
     @header_distance.setter
-    def header_distance(self, value: int | Length | None):
+    def header_distance(self, value: int | Length | None) -> None:
         self._sectPr.header = value
 
     def iter_inner_content(self) -> Iterator[Paragraph | Table]:
@@ -169,7 +171,7 @@ class Section:
         return self._sectPr.left_margin
 
     @left_margin.setter
-    def left_margin(self, value: int | Length | None):
+    def left_margin(self, value: int | Length | None) -> None:
         self._sectPr.left_margin = value
 
     @property
@@ -181,7 +183,7 @@ class Section:
         return self._sectPr.orientation
 
     @orientation.setter
-    def orientation(self, value: WD_ORIENTATION | None):
+    def orientation(self, value: WD_ORIENTATION | None) -> None:
         self._sectPr.orientation = value
 
     @property
@@ -196,7 +198,7 @@ class Section:
         return self._sectPr.page_height
 
     @page_height.setter
-    def page_height(self, value: Length | None):
+    def page_height(self, value: Length | None) -> None:
         self._sectPr.page_height = value
 
     @property
@@ -212,7 +214,7 @@ class Section:
         return self._sectPr.page_width
 
     @page_width.setter
-    def page_width(self, value: Length | None):
+    def page_width(self, value: Length | None) -> None:
         self._sectPr.page_width = value
 
     @property
@@ -226,7 +228,7 @@ class Section:
         return self._sectPr.right_margin
 
     @right_margin.setter
-    def right_margin(self, value: Length | None):
+    def right_margin(self, value: Length | None) -> None:
         self._sectPr.right_margin = value
 
     @property
@@ -239,7 +241,7 @@ class Section:
         return self._sectPr.start_type
 
     @start_type.setter
-    def start_type(self, value: WD_SECTION_START | None):
+    def start_type(self, value: WD_SECTION_START | None) -> None:
         self._sectPr.start_type = value
 
     @property
@@ -249,7 +251,7 @@ class Section:
         return self._sectPr.top_margin
 
     @top_margin.setter
-    def top_margin(self, value: Length | None):
+    def top_margin(self, value: Length | None) -> None:
         self._sectPr.top_margin = value
 
 
@@ -259,8 +261,8 @@ class Sections(Sequence[Section]):
     Supports ``len()``, iteration, and indexed access.
     """
 
-    def __init__(self, document_elm: CT_Document, document_part: DocumentPart):
-        super(Sections, self).__init__()
+    def __init__(self, document_elm: CT_Document, document_part: DocumentPart) -> None:
+        super().__init__()
         self._document_elm = document_elm
         self._document_part = document_part
 
@@ -268,9 +270,9 @@ class Sections(Sequence[Section]):
     def __getitem__(self, key: int) -> Section: ...
 
     @overload
-    def __getitem__(self, key: slice) -> List[Section]: ...
+    def __getitem__(self, key: slice) -> list[Section]: ...
 
-    def __getitem__(self, key: int | slice) -> Section | List[Section]:
+    def __getitem__(self, key: int | slice) -> Section | list[Section]:
         if isinstance(key, slice):
             return [
                 Section(sectPr, self._document_part)
@@ -294,7 +296,7 @@ class _BaseHeaderFooter(BlockItemContainer):
         sectPr: CT_SectPr,
         document_part: DocumentPart,
         header_footer_index: WD_HEADER_FOOTER,
-    ):
+    ) -> None:
         self._sectPr = sectPr
         self._document_part = document_part
         self._hdrftr_index = header_footer_index
@@ -348,10 +350,18 @@ class _BaseHeaderFooter(BlockItemContainer):
         """Remove header/footer part containing the definition of this header/footer."""
         raise NotImplementedError("must be implemented by each subclass")
 
+    # -- overrides the base-class `_element` attribute with a property so the header/footer
+    # -- definition is only created when its content is first accessed --
     @property
-    def _element(self):
+    def _element(self) -> CT_HdrFtr:
         """`w:hdr` or `w:ftr` element, root of header/footer part."""
-        return self._get_or_add_definition().element
+        return cast("CT_HdrFtr", self._get_or_add_definition().element)
+
+    @_element.setter
+    def _element(self, value: BlockItemElement) -> None:
+        # -- the element always comes from the definition part; assignment was never
+        # -- supported, so raise exactly what a property without a setter raises --
+        raise AttributeError(f"property '_element' of '{type(self).__name__}' object has no setter")
 
     def _get_or_add_definition(self) -> HeaderPart | FooterPart:
         """Return HeaderPart or FooterPart object for this section.
@@ -404,14 +414,14 @@ class _Footer(_BaseHeaderFooter):
         return footer_part
 
     @property
-    def _definition(self):
+    def _definition(self) -> FooterPart:
         """|FooterPart| object containing content of this footer."""
         footerReference = self._sectPr.get_footerReference(self._hdrftr_index)
         # -- currently this is never called when `._has_definition` evaluates False --
         assert footerReference is not None
         return self._document_part.footer_part(footerReference.rId)
 
-    def _drop_definition(self):
+    def _drop_definition(self) -> None:
         """Remove footer definition (footer part) associated with this section."""
         rId = self._sectPr.remove_footerReference(self._hdrftr_index)
         self._document_part.drop_rel(rId)
@@ -423,7 +433,7 @@ class _Footer(_BaseHeaderFooter):
         return footerReference is not None
 
     @property
-    def _prior_headerfooter(self):
+    def _prior_headerfooter(self) -> _Footer | None:
         """|_Footer| proxy on prior sectPr element or None if this is first section."""
         preceding_sectPr = self._sectPr.preceding_sectPr
         return (
@@ -443,21 +453,21 @@ class _Header(_BaseHeaderFooter):
     leave an empty paragraph above the newly added one.
     """
 
-    def _add_definition(self):
+    def _add_definition(self) -> HeaderPart:
         """Return newly-added header part."""
         header_part, rId = self._document_part.add_header_part()
         self._sectPr.add_headerReference(self._hdrftr_index, rId)
         return header_part
 
     @property
-    def _definition(self):
+    def _definition(self) -> HeaderPart:
         """|HeaderPart| object containing content of this header."""
         headerReference = self._sectPr.get_headerReference(self._hdrftr_index)
         # -- currently this is never called when `._has_definition` evaluates False --
         assert headerReference is not None
         return self._document_part.header_part(headerReference.rId)
 
-    def _drop_definition(self):
+    def _drop_definition(self) -> None:
         """Remove header definition associated with this section."""
         rId = self._sectPr.remove_headerReference(self._hdrftr_index)
         self._document_part.drop_header_part(rId)
@@ -469,7 +479,7 @@ class _Header(_BaseHeaderFooter):
         return headerReference is not None
 
     @property
-    def _prior_headerfooter(self):
+    def _prior_headerfooter(self) -> _Header | None:
         """|_Header| proxy on prior sectPr element or None if this is first section."""
         preceding_sectPr = self._sectPr.preceding_sectPr
         return (

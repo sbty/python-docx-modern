@@ -32,13 +32,13 @@ class DocumentPart(StoryPart):
     objects provides access to this part object for that purpose.
     """
 
-    def add_footer_part(self):
+    def add_footer_part(self) -> tuple[FooterPart, str]:
         """Return (footer_part, rId) pair for newly-created footer part."""
         footer_part = FooterPart.new(self.package)
         rId = self.relate_to(footer_part, RT.FOOTER)
         return footer_part, rId
 
-    def add_header_part(self):
+    def add_header_part(self) -> tuple[HeaderPart, str]:
         """Return (header_part, rId) pair for newly-created header part."""
         header_part = HeaderPart.new(self.package)
         rId = self.relate_to(header_part, RT.HEADER)
@@ -64,9 +64,9 @@ class DocumentPart(StoryPart):
         """Remove related header part identified by `rId`."""
         self.drop_rel(rId)
 
-    def footer_part(self, rId: str):
+    def footer_part(self, rId: str) -> FooterPart:
         """Return |FooterPart| related by `rId`."""
-        return self.related_parts[rId]
+        return cast("FooterPart", self.related_parts[rId])
 
     def get_style(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle:
         """Return the style in this document matching `style_id`.
@@ -86,9 +86,9 @@ class DocumentPart(StoryPart):
         """
         return self.styles.get_style_id(style_or_name, style_type)
 
-    def header_part(self, rId: str):
+    def header_part(self, rId: str) -> HeaderPart:
         """Return |HeaderPart| related by `rId`."""
-        return self.related_parts[rId]
+        return cast("HeaderPart", self.related_parts[rId])
 
     @lazyproperty
     def inline_shapes(self):

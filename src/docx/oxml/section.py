@@ -349,7 +349,7 @@ class CT_SectPr(BaseOxmlElement):
         self.remove(footerReference)
         return rId
 
-    def remove_headerReference(self, type_: WD_HEADER_FOOTER):
+    def remove_headerReference(self, type_: WD_HEADER_FOOTER) -> str:
         """Return rId of w:headerReference child of `type_` after removing it."""
         headerReference = self.get_headerReference(type_)
         if headerReference is None:
