@@ -5,7 +5,8 @@
 
 from __future__ import annotations
 
-from typing import IO, TYPE_CHECKING, Iterator, List, Sequence
+from collections.abc import Iterator, Sequence
+from typing import IO, TYPE_CHECKING
 
 from docx.blkcntnr import BlockItemContainer
 from docx.enum.section import WD_SECTION
@@ -17,10 +18,13 @@ from docx.text.run import Run
 if TYPE_CHECKING:
     import docx.types as t
     from docx.comments import Comment, Comments
+    from docx.opc.coreprops import CoreProperties
     from docx.oxml.document import CT_Body, CT_Document
     from docx.parts.document import DocumentPart
     from docx.settings import Settings
+    from docx.shape import InlineShape, InlineShapes
     from docx.styles.style import ParagraphStyle, _TableStyle
+    from docx.styles.styles import Styles
     from docx.table import Table
     from docx.text.paragraph import Paragraph
 
@@ -32,11 +36,13 @@ class Document(ElementProxy):
     a document.
     """
 
-    def __init__(self, element: CT_Document, part: DocumentPart):
-        super(Document, self).__init__(element)
-        self._element = element
+    def __init__(self, element: CT_Document, part: DocumentPart) -> None:
+        super().__init__(element)
+        # -- `._element` (inherited, loosely typed) and `._document_elm` are the same
+        # -- `w:document` element; the latter is typed for access to its children --
+        self._element = self._document_elm = element
         self._part = part
-        self.__body = None
+        self.__body: _Body | None = None
 
     def add_comment(
         self,
@@ -66,7 +72,8 @@ class Document(ElementProxy):
         the common case where a comment is a single phrase or sentence without special formatting
         such as bold or italics. More complex comments can be added using the returned `Comment`
         object in much the same way as a `Document` or (table) `Cell` object, using methods like
-        `.add_paragraph()`, .add_run()`, etc.
+        `.add_paragraph()`, .add_run()`, etc. Passing |None| or the empty string for `text` adds a
+        comment with a single empty paragraph.
 
         The `author` and `initials` parameters allow that metadata to be set for the comment.
         `author` is a required attribute on a comment and is the empty string by default.
@@ -87,7 +94,7 @@ class Document(ElementProxy):
 
         return comment
 
-    def add_heading(self, text: str = "", level: int = 1):
+    def add_heading(self, text: str = "", level: int = 1) -> Paragraph:
         """Return a heading paragraph newly added to the end of the document.
 
         The heading paragraph will contain `text` and have its paragraph style
@@ -96,11 +103,11 @@ class Document(ElementProxy):
         {level}`. Raises |ValueError| if `level` is outside the range 0-9.
         """
         if not 0 <= level <= 9:
-            raise ValueError("level must be in range 0-9, got %d" % level)
-        style = "Title" if level == 0 else "Heading %d" % level
+            raise ValueError(f"level must be in range 0-9, got {level}")
+        style = "Title" if level == 0 else f"Heading {level}"
         return self.add_paragraph(text, style)
 
-    def add_page_break(self):
+    def add_page_break(self) -> Paragraph:
         """Return newly |Paragraph| object containing only a page break."""
         paragraph = self.add_paragraph()
         paragraph.add_run().add_break(WD_BREAK.PAGE)
@@ -123,7 +130,7 @@ class Document(ElementProxy):
         image_path_or_stream: str | IO[bytes],
         width: int | Length | None = None,
         height: int | Length | None = None,
-    ):
+    ) -> InlineShape:
         """Return new picture shape added in its own paragraph at end of the document.
 
         The picture contains the image at `image_path_or_stream`, scaled based on
@@ -137,17 +144,17 @@ class Document(ElementProxy):
         run = self.add_paragraph().add_run()
         return run.add_picture(image_path_or_stream, width, height)
 
-    def add_section(self, start_type: WD_SECTION = WD_SECTION.NEW_PAGE):
+    def add_section(self, start_type: WD_SECTION = WD_SECTION.NEW_PAGE) -> Section:
         """Return a |Section| object newly added at the end of the document.
 
         The optional `start_type` argument must be a member of the :ref:`WdSectionStart`
         enumeration, and defaults to ``WD_SECTION.NEW_PAGE`` if not provided.
         """
-        new_sectPr = self._element.body.add_section_break()
+        new_sectPr = self._document_elm.body.add_section_break()
         new_sectPr.start_type = start_type
         return Section(new_sectPr, self._part)
 
-    def add_table(self, rows: int, cols: int, style: str | _TableStyle | None = None):
+    def add_table(self, rows: int, cols: int, style: str | _TableStyle | None = None) -> Table:
         """Add a table having row and column counts of `rows` and `cols` respectively.
 
         `style` may be a table style object or a table style name. If `style` is |None|,
@@ -163,12 +170,12 @@ class Document(ElementProxy):
         return self._part.comments
 
     @property
-    def core_properties(self):
+    def core_properties(self) -> CoreProperties:
         """A |CoreProperties| object providing Dublin Core properties of document."""
         return self._part.core_properties
 
     @property
-    def inline_shapes(self):
+    def inline_shapes(self) -> InlineShapes:
         """The |InlineShapes| collection for this document.
 
         An inline shape is a graphical object, such as a picture, contained in a run of
@@ -182,7 +189,7 @@ class Document(ElementProxy):
         return self._body.iter_inner_content()
 
     @property
-    def paragraphs(self) -> List[Paragraph]:
+    def paragraphs(self) -> list[Paragraph]:
         """The |Paragraph| instances in the document, in document order.
 
         Note that paragraphs within revision marks such as ``<w:ins>`` or ``<w:del>`` do
@@ -195,7 +202,7 @@ class Document(ElementProxy):
         """The |DocumentPart| object of this document."""
         return self._part
 
-    def save(self, path_or_stream: str | IO[bytes]):
+    def save(self, path_or_stream: str | IO[bytes]) -> None:
         """Save this document to `path_or_stream`.
 
         `path_or_stream` can be either a path to a filesystem location (a string) or a
@@ -206,7 +213,7 @@ class Document(ElementProxy):
     @property
     def sections(self) -> Sections:
         """|Sections| object providing access to each section in this document."""
-        return Sections(self._element, self._part)
+        return Sections(self._document_elm, self._part)
 
     @property
     def settings(self) -> Settings:
@@ -214,12 +221,12 @@ class Document(ElementProxy):
         return self._part.settings
 
     @property
-    def styles(self):
+    def styles(self) -> Styles:
         """A |Styles| object providing access to the styles in this document."""
         return self._part.styles
 
     @property
-    def tables(self) -> List[Table]:
+    def tables(self) -> list[Table]:
         """All |Table| instances in the document, in document order.
 
         Note that only tables appearing at the top level of the document appear in this
@@ -242,7 +249,7 @@ class Document(ElementProxy):
     def _body(self) -> _Body:
         """The |_Body| instance containing the content for this document."""
         if self.__body is None:
-            self.__body = _Body(self._element.body, self)
+            self.__body = _Body(self._document_elm.body, self)
         return self.__body
 
 
@@ -252,8 +259,8 @@ class _Body(BlockItemContainer):
     It's primary role is a container for document content.
     """
 
-    def __init__(self, body_elm: CT_Body, parent: t.ProvidesStoryPart):
-        super(_Body, self).__init__(body_elm, parent)
+    def __init__(self, body_elm: CT_Body, parent: t.ProvidesStoryPart) -> None:
+        super().__init__(body_elm, parent)
         self._body = body_elm
 
     def clear_content(self) -> _Body:

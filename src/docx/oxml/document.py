@@ -70,7 +70,7 @@ class CT_Body(BaseOxmlElement):
         # ---the sentinel `w:sectPr` now controls the new last section---
         return sentinel_sectPr
 
-    def clear_content(self):
+    def clear_content(self) -> None:
         """Remove all content child elements from this <w:body> element.
 
         Leave the <w:sectPr> element if it is present.

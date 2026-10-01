@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from docx.opc.coreprops import CoreProperties
     from docx.settings import Settings
     from docx.styles.style import BaseStyle
+    from docx.styles.styles import Styles
 
 
 class DocumentPart(StoryPart):
@@ -91,7 +92,7 @@ class DocumentPart(StoryPart):
         return cast("HeaderPart", self.related_parts[rId])
 
     @lazyproperty
-    def inline_shapes(self):
+    def inline_shapes(self) -> InlineShapes:
         """The |InlineShapes| instance containing the inline shapes in the document."""
         return InlineShapes(self._element.body, self)
 
@@ -120,7 +121,7 @@ class DocumentPart(StoryPart):
         return self._settings_part.settings
 
     @property
-    def styles(self):
+    def styles(self) -> Styles:
         """A |Styles| object providing access to the styles in the styles part of this
         document."""
         return self._styles_part.styles
