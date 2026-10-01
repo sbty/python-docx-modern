@@ -163,6 +163,12 @@ class DescribeComments:
         assert [p.text for p in comment.paragraphs] == ["para 1", "", "para 2"]
         assert all(p._p.style == "CommentText" for p in comment.paragraphs)
 
+    def and_it_treats_None_text_like_no_text(self, comments: Comments, package_: Mock):
+        # -- `Document.add_comment()` accepts `text=None`; it used to raise AttributeError --
+        comment = comments.add_comment(text=None)
+
+        assert [p.text for p in comment.paragraphs] == [""]
+
     def and_it_sets_the_author_and_their_initials_when_adding_a_comment_when_provided(
         self, comments: Comments, package_: Mock
     ):

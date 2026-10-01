@@ -24,6 +24,8 @@ Unreleased (python-docx-modern fork)
 - Fix `Table.alignment` returning a `WD_PARAGRAPH_ALIGNMENT` member instead of a
   `WD_TABLE_ALIGNMENT` member; a paragraph-only `w:jc` value such as "both" now reads
   as `None`
+- Fix `Document.add_comment(text=None)` raising AttributeError; it now adds an empty
+  comment, as `text=""` does
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged

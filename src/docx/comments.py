@@ -32,7 +32,9 @@ class Comments:
         """The number of comments in this collection."""
         return len(self._comments_elm.comment_lst)
 
-    def add_comment(self, text: str = "", author: str = "", initials: str | None = "") -> Comment:
+    def add_comment(
+        self, text: str | None = "", author: str = "", initials: str | None = ""
+    ) -> Comment:
         """Add a new comment to the document and return it.
 
         The comment is added to the end of the comments collection and is assigned a unique
@@ -42,6 +44,7 @@ class Comments:
         case where a comment contains a modest passage of plain text. Multiple paragraphs can be
         added using the `text` argument by separating their text with newlines (`"\\\\n"`).
         Between newlines, text is interpreted as it is in `Document.add_paragraph(text=...)`.
+        Passing |None| or the empty string adds a comment with a single empty paragraph.
 
         The default is to place a single empty paragraph in the comment, which is the same
         behavior as the Word UI when you add a comment. New runs can be added to the first
@@ -63,7 +66,8 @@ class Comments:
         comment_elm.date = dt.datetime.now(dt.timezone.utc)
         comment = Comment(comment_elm, self._comments_part)
 
-        if text == "":
+        # -- no text (empty or None) leaves the single empty paragraph of a new comment --
+        if not text:
             return comment
 
         para_text_iter = iter(text.split("\n"))
