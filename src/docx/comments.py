@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import TYPE_CHECKING, Iterator
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 from docx.blkcntnr import BlockItemContainer
 
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 class Comments:
     """Collection containing the comments added to this document."""
 
-    def __init__(self, comments_elm: CT_Comments, comments_part: CommentsPart):
+    def __init__(self, comments_elm: CT_Comments, comments_part: CommentsPart) -> None:
         self._comments_elm = comments_elm
         self._comments_part = comments_part
 
@@ -101,7 +102,7 @@ class Comment(BlockItemContainer):
     space limitations. Such "over-sized" content can still be viewed in the review pane.
     """
 
-    def __init__(self, comment_elm: CT_Comment, comments_part: CommentsPart):
+    def __init__(self, comment_elm: CT_Comment, comments_part: CommentsPart) -> None:
         super().__init__(comment_elm, comments_part)
         self._comment_elm = comment_elm
 
@@ -131,7 +132,7 @@ class Comment(BlockItemContainer):
         return self._comment_elm.author
 
     @author.setter
-    def author(self, value: str):
+    def author(self, value: str) -> None:
         self._comment_elm.author = value
 
     @property
@@ -149,7 +150,7 @@ class Comment(BlockItemContainer):
         return self._comment_elm.initials
 
     @initials.setter
-    def initials(self, value: str | None):
+    def initials(self, value: str | None) -> None:
         self._comment_elm.initials = value
 
     @property
