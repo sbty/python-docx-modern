@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from docx.comments import Comments
     from docx.enum.style import WD_STYLE_TYPE
     from docx.opc.coreprops import CoreProperties
+    from docx.oxml.document import CT_Document
     from docx.settings import Settings
     from docx.styles.style import BaseStyle
     from docx.styles.styles import Styles
@@ -54,12 +55,15 @@ class DocumentPart(StoryPart):
     def core_properties(self) -> CoreProperties:
         """A |CoreProperties| object providing read/write access to the core properties
         of this document."""
-        return self.package.core_properties
+        # -- `Part.package` is untyped for mypy (docx.opc is not migrated yet); a typed local
+        # -- avoids a cast that pyright, which infers the type, reports as unnecessary --
+        core_properties: CoreProperties = self.package.core_properties
+        return core_properties
 
     @property
-    def document(self):
+    def document(self) -> Document:
         """A |Document| object providing access to the content of this document."""
-        return Document(self._element, self)
+        return Document(self._document_elm, self)
 
     def drop_header_part(self, rId: str) -> None:
         """Remove related header part identified by `rId`."""
@@ -69,7 +73,7 @@ class DocumentPart(StoryPart):
         """Return |FooterPart| related by `rId`."""
         return cast("FooterPart", self.related_parts[rId])
 
-    def get_style(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle:
+    def get_style(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
         """Return the style in this document matching `style_id`.
 
         Returns the default style for `style_type` if `style_id` is |None| or does not
@@ -77,7 +81,9 @@ class DocumentPart(StoryPart):
         """
         return self.styles.get_by_id(style_id, style_type)
 
-    def get_style_id(self, style_or_name, style_type):
+    def get_style_id(
+        self, style_or_name: BaseStyle | str | None, style_type: WD_STYLE_TYPE
+    ) -> str | None:
         """Return the style_id (|str|) of the style of `style_type` matching
         `style_or_name`.
 
@@ -94,7 +100,7 @@ class DocumentPart(StoryPart):
     @lazyproperty
     def inline_shapes(self) -> InlineShapes:
         """The |InlineShapes| instance containing the inline shapes in the document."""
-        return InlineShapes(self._element.body, self)
+        return InlineShapes(self._document_elm.body, self)
 
     @lazyproperty
     def numbering_part(self) -> NumberingPart:
@@ -109,7 +115,7 @@ class DocumentPart(StoryPart):
             self.relate_to(numbering_part, RT.NUMBERING)
             return numbering_part
 
-    def save(self, path_or_stream: str | IO[bytes]):
+    def save(self, path_or_stream: str | IO[bytes]) -> None:
         """Save this document to `path_or_stream`, which can be either a path to a
         filesystem location (a string) or a file-like object."""
         self.package.save(path_or_stream)
@@ -153,6 +159,11 @@ class DocumentPart(StoryPart):
             settings_part = SettingsPart.default(self.package)
             self.relate_to(settings_part, RT.SETTINGS)
             return settings_part
+
+    @property
+    def _document_elm(self) -> CT_Document:
+        """The `w:document` root element of this part, typed."""
+        return cast("CT_Document", self._element)
 
     @property
     def _styles_part(self) -> StylesPart:

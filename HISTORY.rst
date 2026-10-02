@@ -32,6 +32,9 @@ Unreleased (python-docx-modern fork)
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged
+- Typing: `DocumentPart.get_style()` / `StoryPart.get_style()` are annotated
+  `BaseStyle | None` (they return None when no default style exists) and
+  `StylesPart.default()` takes a `docx.package.Package`; runtime behavior is unchanged
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; add mypy strict checking for
   migrated modules

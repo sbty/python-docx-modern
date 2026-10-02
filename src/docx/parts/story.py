@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import IO, TYPE_CHECKING, Tuple, cast
+from typing import IO, TYPE_CHECKING, cast
 
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.opc.part import XmlPart
@@ -25,7 +25,7 @@ class StoryPart(XmlPart):
     `.add_paragraph()`, `.add_table()` etc.
     """
 
-    def get_or_add_image(self, image_descriptor: str | IO[bytes]) -> Tuple[str, Image]:
+    def get_or_add_image(self, image_descriptor: str | IO[bytes]) -> tuple[str, Image]:
         """Return (rId, image) pair for image identified by `image_descriptor`.
 
         `rId` is the str key (often like "rId7") for the relationship between this story
@@ -48,7 +48,7 @@ class StoryPart(XmlPart):
         """
         cast("CT_Styles", self._document_part.styles.element).ensure_comment_styles()
 
-    def get_style(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle:
+    def get_style(self, style_id: str | None, style_type: WD_STYLE_TYPE) -> BaseStyle | None:
         """Return the style in this document matching `style_id`.
 
         Returns the default style for `style_type` if `style_id` is |None| or does not

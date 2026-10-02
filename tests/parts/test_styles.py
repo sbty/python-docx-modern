@@ -3,8 +3,8 @@
 import pytest
 
 from docx.opc.constants import CONTENT_TYPE as CT
-from docx.opc.package import OpcPackage
 from docx.oxml.styles import CT_Styles
+from docx.package import Package
 from docx.parts.styles import StylesPart
 from docx.styles.styles import Styles
 
@@ -19,7 +19,7 @@ class DescribeStylesPart:
         assert styles is styles_
 
     def it_can_construct_a_default_styles_part_to_help(self):
-        package = OpcPackage()
+        package = Package()
         styles_part = StylesPart.default(package)
         assert isinstance(styles_part, StylesPart)
         assert styles_part.partname == "/word/styles.xml"

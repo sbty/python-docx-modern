@@ -21,12 +21,12 @@ class SettingsPart(XmlPart):
 
     def __init__(
         self, partname: PackURI, content_type: str, element: CT_Settings, package: Package
-    ):
+    ) -> None:
         super().__init__(partname, content_type, element, package)
         self._settings = element
 
     @classmethod
-    def default(cls, package: Package):
+    def default(cls, package: Package) -> SettingsPart:
         """Return a newly created settings part, containing a default `w:settings` element tree."""
         partname = PackURI("/word/settings.xml")
         content_type = CT.WML_SETTINGS
@@ -42,7 +42,7 @@ class SettingsPart(XmlPart):
         return Settings(self._settings)
 
     @classmethod
-    def _default_settings_xml(cls):
+    def _default_settings_xml(cls) -> bytes:
         """Return a bytestream containing XML for a default settings part."""
         path = os.path.join(os.path.split(__file__)[0], "..", "templates", "default-settings.xml")
         with open(path, "rb") as f:

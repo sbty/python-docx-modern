@@ -1,5 +1,7 @@
 """Test suite for the docx.parts.numbering module."""
 
+from typing import cast
+
 import pytest
 
 from docx.oxml.numbering import CT_Numbering
@@ -66,5 +68,5 @@ class Describe_NumberingDefinitions:
         for idx in range(numbering_definition_count):
             numbering_bldr.with_child(a_num())
         numbering_elm = numbering_bldr.element
-        numbering_definitions = _NumberingDefinitions(numbering_elm)
+        numbering_definitions = _NumberingDefinitions(cast(CT_Numbering, numbering_elm))
         return numbering_definitions, numbering_definition_count

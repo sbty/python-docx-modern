@@ -17,7 +17,7 @@ class FooterPart(StoryPart):
     """Definition of a section footer."""
 
     @classmethod
-    def new(cls, package: Package):
+    def new(cls, package: Package) -> FooterPart:
         """Return newly created footer part."""
         partname = package.next_partname("/word/footer%d.xml")
         content_type = CT.WML_FOOTER
@@ -25,7 +25,7 @@ class FooterPart(StoryPart):
         return cls(partname, content_type, element, package)
 
     @classmethod
-    def _default_footer_xml(cls):
+    def _default_footer_xml(cls) -> bytes:
         """Return bytes containing XML for a default footer part."""
         path = os.path.join(os.path.split(__file__)[0], "..", "templates", "default-footer.xml")
         with open(path, "rb") as f:
@@ -37,7 +37,7 @@ class HeaderPart(StoryPart):
     """Definition of a section header."""
 
     @classmethod
-    def new(cls, package: Package):
+    def new(cls, package: Package) -> HeaderPart:
         """Return newly created header part."""
         partname = package.next_partname("/word/header%d.xml")
         content_type = CT.WML_HEADER
@@ -45,7 +45,7 @@ class HeaderPart(StoryPart):
         return cls(partname, content_type, element, package)
 
     @classmethod
-    def _default_header_xml(cls):
+    def _default_header_xml(cls) -> bytes:
         """Return bytes containing XML for a default header part."""
         path = os.path.join(os.path.split(__file__)[0], "..", "templates", "default-header.xml")
         with open(path, "rb") as f:

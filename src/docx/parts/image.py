@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from docx.image.image import Image
 from docx.opc.part import Part
-from docx.shared import Emu, Inches
+from docx.shared import Emu, Inches, Length
 
 if TYPE_CHECKING:
     from docx.opc.package import OpcPackage
@@ -22,12 +22,12 @@ class ImagePart(Part):
 
     def __init__(
         self, partname: PackURI, content_type: str, blob: bytes, image: Image | None = None
-    ):
-        super(ImagePart, self).__init__(partname, content_type, blob)
+    ) -> None:
+        super().__init__(partname, content_type, blob)
         self._image = image
 
     @property
-    def default_cx(self):
+    def default_cx(self) -> Length:
         """Native width of this image, calculated from its width in pixels and
         horizontal dots per inch (dpi)."""
         px_width = self.image.px_width
@@ -36,7 +36,7 @@ class ImagePart(Part):
         return Inches(width_in_inches)
 
     @property
-    def default_cy(self):
+    def default_cy(self) -> Length:
         """Native height of this image, calculated from its height in pixels and
         vertical dots per inch (dpi)."""
         px_height = self.image.px_height
@@ -45,7 +45,7 @@ class ImagePart(Part):
         return Emu(height_in_emu)
 
     @property
-    def filename(self):
+    def filename(self) -> str:
         """Filename from which this image part was originally created.
 
         A generic name, e.g. 'image.png', is substituted if no name is available, for
@@ -54,10 +54,10 @@ class ImagePart(Part):
         """
         if self._image is not None:
             return self._image.filename
-        return "image.%s" % self.partname.ext
+        return f"image.{self.partname.ext}"
 
     @classmethod
-    def from_image(cls, image: Image, partname: PackURI):
+    def from_image(cls, image: Image, partname: PackURI) -> ImagePart:
         """Return an |ImagePart| instance newly created from `image` and assigned
         `partname`."""
         return ImagePart(partname, image.content_type, image.blob, image)
@@ -69,12 +69,14 @@ class ImagePart(Part):
         return self._image
 
     @classmethod
-    def load(cls, partname: PackURI, content_type: str, blob: bytes, package: OpcPackage):
+    def load(
+        cls, partname: PackURI, content_type: str, blob: bytes, package: OpcPackage
+    ) -> ImagePart:
         """Called by ``docx.opc.package.PartFactory`` to load an image part from a
         package being opened by ``Document(...)`` call."""
         return cls(partname, content_type, blob)
 
     @property
-    def sha1(self):
+    def sha1(self) -> str:
         """SHA1 hash digest of the blob of this image part."""
         return hashlib.sha1(self.blob).hexdigest()

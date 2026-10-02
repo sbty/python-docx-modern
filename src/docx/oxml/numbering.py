@@ -79,6 +79,8 @@ class CT_Numbering(BaseOxmlElement):
     """``<w:numbering>`` element, the root element of a numbering part, i.e.
     numbering.xml."""
 
+    num_lst: list[CT_Num]
+
     num = ZeroOrMore("w:num", successors=("w:numIdMacAtCleanup",))
 
     def add_num(self, abstractNum_id):

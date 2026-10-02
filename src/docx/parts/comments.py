@@ -25,7 +25,7 @@ class CommentsPart(StoryPart):
 
     def __init__(
         self, partname: PackURI, content_type: str, element: CT_Comments, package: Package
-    ):
+    ) -> None:
         super().__init__(partname, content_type, element, package)
         self._comments = element
 
