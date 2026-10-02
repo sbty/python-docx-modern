@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from struct import Struct
+from typing import IO
 
 from .constants import MIME_TYPE
 from .image import BaseImageHeader
@@ -12,27 +15,29 @@ class Gif(BaseImageHeader):
     """
 
     @classmethod
-    def from_stream(cls, stream):
+    def from_stream(cls, stream: IO[bytes]) -> Gif:
         """Return |Gif| instance having header properties parsed from GIF image in
         `stream`."""
         px_width, px_height = cls._dimensions_from_stream(stream)
         return cls(px_width, px_height, 72, 72)
 
     @property
-    def content_type(self):
+    def content_type(self) -> str:
         """MIME content type for this image, unconditionally `image/gif` for GIF
         images."""
         return MIME_TYPE.GIF
 
     @property
-    def default_ext(self):
+    def default_ext(self) -> str:
         """Default filename extension, always 'gif' for GIF images."""
         return "gif"
 
     @classmethod
-    def _dimensions_from_stream(cls, stream):
+    def _dimensions_from_stream(cls, stream: IO[bytes]) -> tuple[int, int]:
         stream.seek(6)
         bytes_ = stream.read(4)
         struct = Struct("<HH")
+        px_width: int
+        px_height: int
         px_width, px_height = struct.unpack(bytes_)
         return px_width, px_height

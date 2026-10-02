@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import io
 import os
-from typing import IO, Tuple
+from typing import IO
 
 from docx.image.exceptions import UnrecognizedImageError
 from docx.shared import Emu, Inches, Length, lazyproperty
@@ -19,8 +19,8 @@ class Image:
     """Graphical image stream such as JPEG, PNG, or GIF with properties and methods
     required by ImagePart."""
 
-    def __init__(self, blob: bytes, filename: str, image_header: BaseImageHeader):
-        super(Image, self).__init__()
+    def __init__(self, blob: bytes, filename: str, image_header: BaseImageHeader) -> None:
+        super().__init__()
         self._blob = blob
         self._filename = filename
         self._image_header = image_header
@@ -33,9 +33,11 @@ class Image:
         return cls._from_stream(stream, blob)
 
     @classmethod
-    def from_file(cls, image_descriptor: str | IO[bytes]):
+    def from_file(cls, image_descriptor: str | IO[bytes]) -> Image:
         """Return a new |Image| subclass instance loaded from the image file identified
         by `image_descriptor`, a path or file-like object."""
+        stream: IO[bytes]
+        filename: str | None
         if isinstance(image_descriptor, str):
             path = image_descriptor
             with open(path, "rb") as f:
@@ -50,7 +52,7 @@ class Image:
         return cls._from_stream(stream, blob, filename)
 
     @property
-    def blob(self):
+    def blob(self) -> bytes:
         """The bytes of the image 'file'."""
         return self._blob
 
@@ -60,7 +62,7 @@ class Image:
         return self._image_header.content_type
 
     @lazyproperty
-    def ext(self):
+    def ext(self) -> str:
         """The file extension for the image.
 
         If an actual one is available from a load filename it is used. Otherwise a
@@ -119,7 +121,7 @@ class Image:
 
     def scaled_dimensions(
         self, width: int | Length | None = None, height: int | Length | None = None
-    ) -> Tuple[Length, Length]:
+    ) -> tuple[Length, Length]:
         """(cx, cy) pair representing scaled dimensions of this image.
 
         The native dimensions of the image are scaled by applying the following rules to
@@ -150,7 +152,7 @@ class Image:
         return Emu(width), Emu(height)
 
     @lazyproperty
-    def sha1(self):
+    def sha1(self) -> str:
         """SHA1 hash digest of the image blob."""
         return hashlib.sha1(self._blob).hexdigest()
 
@@ -165,15 +167,15 @@ class Image:
         image in `stream`."""
         image_header = _ImageHeaderFactory(stream)
         if filename is None:
-            filename = "image.%s" % image_header.default_ext
+            filename = f"image.{image_header.default_ext}"
         return cls(blob, filename, image_header)
 
 
-def _ImageHeaderFactory(stream: IO[bytes]):
+def _ImageHeaderFactory(stream: IO[bytes]) -> BaseImageHeader:
     """A |BaseImageHeader| subclass instance that can parse headers of image in `stream`."""
     from docx.image import SIGNATURES
 
-    def read_32(stream: IO[bytes]):
+    def read_32(stream: IO[bytes]) -> bytes:
         stream.seek(0)
         return stream.read(32)
 
@@ -189,7 +191,7 @@ def _ImageHeaderFactory(stream: IO[bytes]):
 class BaseImageHeader:
     """Base class for image header subclasses like |Jpeg| and |Tiff|."""
 
-    def __init__(self, px_width: int, px_height: int, horz_dpi: int, vert_dpi: int):
+    def __init__(self, px_width: int, px_height: int, horz_dpi: int, vert_dpi: int) -> None:
         self._px_width = px_width
         self._px_height = px_height
         self._horz_dpi = horz_dpi
@@ -212,17 +214,17 @@ class BaseImageHeader:
         )
 
     @property
-    def px_width(self):
+    def px_width(self) -> int:
         """The horizontal pixel dimension of the image."""
         return self._px_width
 
     @property
-    def px_height(self):
+    def px_height(self) -> int:
         """The vertical pixel dimension of the image."""
         return self._px_height
 
     @property
-    def horz_dpi(self):
+    def horz_dpi(self) -> int:
         """Integer dots per inch for the width of this image.
 
         Defaults to 72 when not present in the file, as is often the case.
@@ -230,7 +232,7 @@ class BaseImageHeader:
         return self._horz_dpi
 
     @property
-    def vert_dpi(self):
+    def vert_dpi(self) -> int:
         """Integer dots per inch for the height of this image.
 
         Defaults to 72 when not present in the file, as is often the case.

@@ -44,11 +44,11 @@ class DescribePng:
         assert isinstance(png, Png)
 
     def it_knows_its_content_type(self):
-        png = Png(None, None, None, None)
+        png = Png(None, None, None, None)  # pyright: ignore[reportArgumentType]
         assert png.content_type == MIME_TYPE.PNG
 
     def it_knows_its_default_ext(self):
-        png = Png(None, None, None, None)
+        png = Png(None, None, None, None)  # pyright: ignore[reportArgumentType]
         assert png.default_ext == "png"
 
     # fixtures -------------------------------------------------------
@@ -382,7 +382,7 @@ class Describe_ChunkFactory:
 class Describe_Chunk:
     def it_can_construct_from_a_stream_and_offset(self):
         chunk_type = "fOOB"
-        chunk = _Chunk.from_offset(chunk_type, None, None)
+        chunk = _Chunk.from_offset(chunk_type, None, None)  # pyright: ignore[reportArgumentType]
         assert isinstance(chunk, _Chunk)
         assert chunk.type_name == chunk_type
 
@@ -390,7 +390,7 @@ class Describe_Chunk:
 class Describe_IHDRChunk:
     def it_can_construct_from_a_stream_and_offset(self, from_offset_fixture):
         stream_rdr, offset, px_width, px_height = from_offset_fixture
-        ihdr_chunk = _IHDRChunk.from_offset(None, stream_rdr, offset)
+        ihdr_chunk = _IHDRChunk.from_offset(None, stream_rdr, offset)  # pyright: ignore[reportArgumentType]
         assert isinstance(ihdr_chunk, _IHDRChunk)
         assert ihdr_chunk.px_width == px_width
         assert ihdr_chunk.px_height == px_height
@@ -410,7 +410,7 @@ class Describe_pHYsChunk:
         stream_rdr, offset = from_offset_fixture[:2]
         horz_px_per_unit, vert_px_per_unit = from_offset_fixture[2:4]
         units_specifier = from_offset_fixture[4]
-        pHYs_chunk = _pHYsChunk.from_offset(None, stream_rdr, offset)
+        pHYs_chunk = _pHYsChunk.from_offset(None, stream_rdr, offset)  # pyright: ignore[reportArgumentType]
         assert isinstance(pHYs_chunk, _pHYsChunk)
         assert pHYs_chunk.horz_px_per_unit == horz_px_per_unit
         assert pHYs_chunk.vert_px_per_unit == vert_px_per_unit

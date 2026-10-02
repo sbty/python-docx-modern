@@ -47,11 +47,11 @@ class DescribeTiff:
         assert isinstance(tiff, Tiff)
 
     def it_knows_its_content_type(self):
-        tiff = Tiff(None, None, None, None)
+        tiff = Tiff(None, None, None, None)  # pyright: ignore[reportArgumentType]
         assert tiff.content_type == MIME_TYPE.TIFF
 
     def it_knows_its_default_ext(self):
-        tiff = Tiff(None, None, None, None)
+        tiff = Tiff(None, None, None, None)  # pyright: ignore[reportArgumentType]
         assert tiff.default_ext == "tiff"
 
     # fixtures -------------------------------------------------------
@@ -138,7 +138,7 @@ class Describe_TiffParser:
         if y_resolution is not None:
             entries[TIFF_TAG.Y_RESOLUTION] = y_resolution
 
-        tiff_parser = _TiffParser(entries)
+        tiff_parser = _TiffParser(entries)  # pyright: ignore[reportArgumentType]
         return tiff_parser, expected_horz_dpi, expected_vert_dpi
 
     @pytest.fixture
@@ -414,7 +414,7 @@ class Describe_AsciiIfdEntry:
     def it_can_parse_an_ascii_string_IFD_entry(self):
         bytes_ = b"foobar\x00"
         stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
-        val = _AsciiIfdEntry._parse_value(stream_rdr, None, 7, 0)
+        val = _AsciiIfdEntry._parse_value(stream_rdr, None, 7, 0)  # pyright: ignore[reportArgumentType]
         assert val == "foobar"
 
 
@@ -422,7 +422,7 @@ class Describe_ShortIfdEntry:
     def it_can_parse_a_short_int_IFD_entry(self):
         bytes_ = b"foobaroo\x00\x2a"
         stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
-        val = _ShortIfdEntry._parse_value(stream_rdr, 0, 1, None)
+        val = _ShortIfdEntry._parse_value(stream_rdr, 0, 1, None)  # pyright: ignore[reportArgumentType]
         assert val == 42
 
 
@@ -430,7 +430,7 @@ class Describe_LongIfdEntry:
     def it_can_parse_a_long_int_IFD_entry(self):
         bytes_ = b"foobaroo\x00\x00\x00\x2a"
         stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
-        val = _LongIfdEntry._parse_value(stream_rdr, 0, 1, None)
+        val = _LongIfdEntry._parse_value(stream_rdr, 0, 1, None)  # pyright: ignore[reportArgumentType]
         assert val == 42
 
 
@@ -438,14 +438,17 @@ class Describe_RationalIfdEntry:
     def it_can_parse_a_rational_IFD_entry(self):
         bytes_ = b"\x00\x00\x00\x2a\x00\x00\x00\x54"
         stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
-        val = _RationalIfdEntry._parse_value(stream_rdr, None, 1, 0)
+        val = _RationalIfdEntry._parse_value(stream_rdr, None, 1, 0)  # pyright: ignore[reportArgumentType]
         assert val == 0.5
 
     # -- some writers store an undefined rational as 0/0 (#1494) --
     def it_parses_a_zero_denominator_rational_as_zero(self):
         bytes_ = b"\x00\x00\x00\x00\x00\x00\x00\x00"
         stream_rdr = StreamReader(io.BytesIO(bytes_), BIG_ENDIAN)
-        val = _RationalIfdEntry._parse_value(  # pyright: ignore[reportPrivateUsage, reportUnknownMemberType, reportUnknownVariableType]
-            stream_rdr, None, 1, 0
+        val = _RationalIfdEntry._parse_value(  # pyright: ignore[reportPrivateUsage]
+            stream_rdr,
+            None,  # pyright: ignore[reportArgumentType]
+            1,
+            0,
         )
         assert val == 0.0

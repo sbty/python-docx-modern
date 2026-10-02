@@ -33,11 +33,11 @@ from ..unitutil.mock import (
 
 class DescribeJpeg:
     def it_knows_its_content_type(self):
-        jpeg = Jpeg(None, None, None, None)
+        jpeg = Jpeg(None, None, None, None)  # pyright: ignore[reportArgumentType]
         assert jpeg.content_type == MIME_TYPE.JPEG
 
     def it_knows_its_default_ext(self):
-        jpeg = Jpeg(None, None, None, None)
+        jpeg = Jpeg(None, None, None, None)  # pyright: ignore[reportArgumentType]
         assert jpeg.default_ext == "jpg"
 
     class DescribeExif:
@@ -272,7 +272,7 @@ class Describe_App0Marker:
 
     def it_knows_the_image_dpi(self, dpi_fixture):
         density_units, x_density, y_density, horz_dpi, vert_dpi = dpi_fixture
-        app0 = _App0Marker(None, None, None, density_units, x_density, y_density)
+        app0 = _App0Marker(None, None, None, density_units, x_density, y_density)  # pyright: ignore[reportArgumentType]
         assert app0.horz_dpi == horz_dpi
         assert app0.vert_dpi == vert_dpi
 
@@ -332,7 +332,7 @@ class Describe_App1Marker:
 
     def it_knows_the_image_dpi(self):
         horz_dpi, vert_dpi = 42, 24
-        app1 = _App1Marker(None, None, None, horz_dpi, vert_dpi)
+        app1 = _App1Marker(None, None, None, horz_dpi, vert_dpi)  # pyright: ignore[reportArgumentType]
         assert app1.horz_dpi == horz_dpi
         assert app1.vert_dpi == vert_dpi
 
@@ -399,7 +399,7 @@ class Describe_SofMarker:
         assert isinstance(sof_marker, _SofMarker)
 
     def it_knows_the_image_width_and_height(self):
-        sof = _SofMarker(None, None, None, 42, 24)
+        sof = _SofMarker(None, None, None, 42, 24)  # pyright: ignore[reportArgumentType]
         assert sof.px_width == 42
         assert sof.px_height == 24
 
