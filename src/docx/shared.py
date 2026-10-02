@@ -3,17 +3,10 @@
 from __future__ import annotations
 
 import functools
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generic,
-    Iterator,
-    List,
-    Tuple,
-    TypeVar,
-    cast,
-)
+from collections.abc import Callable, Iterator
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     import docx.types as t
@@ -36,36 +29,36 @@ class Length(int):
     _EMUS_PER_PT = 12700
     _EMUS_PER_TWIP = 635
 
-    def __new__(cls, emu: int):
+    def __new__(cls, emu: int) -> Self:
         return int.__new__(cls, emu)
 
     @property
-    def cm(self):
+    def cm(self) -> float:
         """The equivalent length expressed in centimeters (float)."""
         return self / float(self._EMUS_PER_CM)
 
     @property
-    def emu(self):
+    def emu(self) -> Length:
         """The equivalent length expressed in English Metric Units (int)."""
         return self
 
     @property
-    def inches(self):
+    def inches(self) -> float:
         """The equivalent length expressed in inches (float)."""
         return self / float(self._EMUS_PER_INCH)
 
     @property
-    def mm(self):
+    def mm(self) -> float:
         """The equivalent length expressed in millimeters (float)."""
         return self / float(self._EMUS_PER_MM)
 
     @property
-    def pt(self):
+    def pt(self) -> float:
         """Floating point length in points."""
         return self / float(self._EMUS_PER_PT)
 
     @property
-    def twips(self):
+    def twips(self) -> int:
         """The equivalent length expressed in twips (int)."""
         return int(round(self / float(self._EMUS_PER_TWIP)))
 
@@ -73,7 +66,7 @@ class Length(int):
 class Inches(Length):
     """Convenience constructor for length in inches, e.g. ``width = Inches(0.5)``."""
 
-    def __new__(cls, inches: float):
+    def __new__(cls, inches: float) -> Self:
         emu = int(inches * Length._EMUS_PER_INCH)
         return Length.__new__(cls, emu)
 
@@ -81,7 +74,7 @@ class Inches(Length):
 class Cm(Length):
     """Convenience constructor for length in centimeters, e.g. ``height = Cm(12)``."""
 
-    def __new__(cls, cm: float):
+    def __new__(cls, cm: float) -> Self:
         emu = int(cm * Length._EMUS_PER_CM)
         return Length.__new__(cls, emu)
 
@@ -90,14 +83,14 @@ class Emu(Length):
     """Convenience constructor for length in English Metric Units, e.g. ``width =
     Emu(457200)``."""
 
-    def __new__(cls, emu: int):
+    def __new__(cls, emu: int) -> Self:
         return Length.__new__(cls, int(emu))
 
 
 class Mm(Length):
     """Convenience constructor for length in millimeters, e.g. ``width = Mm(240.5)``."""
 
-    def __new__(cls, mm: float):
+    def __new__(cls, mm: float) -> Self:
         emu = int(mm * Length._EMUS_PER_MM)
         return Length.__new__(cls, emu)
 
@@ -105,7 +98,7 @@ class Mm(Length):
 class Pt(Length):
     """Convenience value class for specifying a length in points."""
 
-    def __new__(cls, points: float):
+    def __new__(cls, points: float) -> Self:
         emu = int(points * Length._EMUS_PER_PT)
         return Length.__new__(cls, emu)
 
@@ -116,29 +109,31 @@ class Twips(Length):
     A twip is a twentieth of a point, 635 EMU.
     """
 
-    def __new__(cls, twips: float):
+    def __new__(cls, twips: float) -> Self:
         emu = int(twips * Length._EMUS_PER_TWIP)
         return Length.__new__(cls, emu)
 
 
-class RGBColor(Tuple[int, int, int]):
+class RGBColor(tuple[int, int, int]):
     """Immutable value object defining a particular RGB color."""
 
-    def __new__(cls, r: int, g: int, b: int):
+    def __new__(cls, r: int, g: int, b: int) -> Self:
         msg = "RGBColor() takes three integer values 0-255"
         for val in (r, g, b):
             if not isinstance(val, int):  # pyright: ignore[reportUnnecessaryIsInstance]
                 raise TypeError(msg)
             if val < 0 or val > 255:
                 raise ValueError(msg)
-        return super(RGBColor, cls).__new__(cls, (r, g, b))
+        return super().__new__(cls, (r, g, b))
 
-    def __repr__(self):
-        return "RGBColor(0x%02x, 0x%02x, 0x%02x)" % self
+    def __repr__(self) -> str:
+        r, g, b = self
+        return f"RGBColor(0x{r:02x}, 0x{g:02x}, 0x{b:02x})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a hex string rgb value, like '3C2F80'."""
-        return "%02X%02X%02X" % self
+        r, g, b = self
+        return f"{r:02X}{g:02X}{b:02X}"
 
     @classmethod
     def from_string(cls, rgb_hex_str: str) -> RGBColor:
@@ -210,9 +205,11 @@ class lazyproperty(Generic[T]):
         # --- and store the name of that decorated method
         self._name = fget.__name__
         # --- adopt fget's __name__, __doc__, and other attributes
-        functools.update_wrapper(self, fget)  # pyright: ignore
+        # -- typeshed types update_wrapper()'s `wrapper` as a callable; this descriptor
+        # -- only borrows fget's metadata --
+        functools.update_wrapper(self, fget)  # type: ignore[arg-type]
 
-    def __get__(self, obj: Any, type: Any = None) -> T:
+    def __get__(self, obj: object, type: object = None) -> T:
         """Called on each access of 'fget' attribute on class or instance.
 
         *self* is this instance of a lazyproperty descriptor "wrapping" the property
@@ -244,7 +241,7 @@ class lazyproperty(Generic[T]):
             value = obj.__dict__[self._name] = self._fget(obj)
             return value
 
-    def __set__(self, obj: Any, value: Any) -> None:
+    def __set__(self, obj: object, value: object) -> None:
         """Raises unconditionally, to preserve read-only behavior.
 
         This decorator is intended to implement immutable (and idempotent) object
@@ -266,7 +263,7 @@ class lazyproperty(Generic[T]):
         raise AttributeError("can't set attribute")
 
 
-def write_only_property(f: Callable[[Any, Any], None]):
+def write_only_property(f: Callable[[Any, Any], None]) -> property:
     """@write_only_property decorator.
 
     Creates a property (descriptor attribute) that accepts assignment, but not getattr
@@ -285,7 +282,7 @@ class ElementProxy:
     common type of class in python-docx other than custom element (oxml) classes.
     """
 
-    def __init__(self, element: BaseOxmlElement, parent: t.ProvidesXmlPart | None = None):
+    def __init__(self, element: BaseOxmlElement, parent: t.ProvidesXmlPart | None = None) -> None:
         self._element = element
         self._parent = parent
 
@@ -307,7 +304,7 @@ class ElementProxy:
         return self._element is not other._element
 
     @property
-    def element(self):
+    def element(self) -> BaseOxmlElement:
         """The lxml element proxied by this object."""
         return self._element
 
@@ -327,7 +324,7 @@ class Parented:
     Provides ``self._parent`` attribute to subclasses.
     """
 
-    def __init__(self, parent: t.ProvidesXmlPart):
+    def __init__(self, parent: t.ProvidesXmlPart) -> None:
         self._parent = parent
 
     @property
@@ -347,7 +344,7 @@ class StoryChild:
     Provides `self._parent` attribute to subclasses.
     """
 
-    def __init__(self, parent: t.ProvidesStoryPart):
+    def __init__(self, parent: t.ProvidesStoryPart) -> None:
         self._parent = parent
 
     @property
@@ -364,9 +361,9 @@ class TextAccumulator:
     the text fragments are punctuated, defaulting to the empty string.
     """
 
-    def __init__(self, separator: str = ""):
+    def __init__(self, separator: str = "") -> None:
         self._separator = separator
-        self._texts: List[str] = []
+        self._texts: list[str] = []
 
     def push(self, text: str) -> None:
         """Add a text fragment to the accumulator."""
