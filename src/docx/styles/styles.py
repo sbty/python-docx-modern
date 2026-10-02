@@ -116,7 +116,7 @@ class Styles(ElementProxy):
         having `style_id` is not of `style_type`.
         """
         style = self._styles_elm.get_by_id(style_id) if style_id else None
-        if style is None or style.type != style_type:
+        if style is None or style.effective_type != style_type:
             return self.default(style_type)
         return StyleFactory(style)
 

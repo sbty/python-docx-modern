@@ -1,8 +1,11 @@
 """Test suite for the docx.styles.style module."""
 
+from typing import cast
+
 import pytest
 
 from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml.styles import CT_Style
 from docx.styles.style import (
     BaseStyle,
     CharacterStyle,
@@ -19,6 +22,11 @@ from ..unitutil.mock import call, class_mock, function_mock, instance_mock
 
 
 class DescribeStyleFactory:
+    # -- `w:type` is optional and defaults to paragraph in the schema --
+    def it_constructs_a_paragraph_style_when_the_style_has_no_type(self):
+        style = StyleFactory(cast(CT_Style, element("w:style{w:styleId=Foo}")))
+        assert type(style) is ParagraphStyle
+
     def it_constructs_the_right_type_of_style(self, factory_fixture):
         style_elm, StyleCls_, style_ = factory_fixture
         style = StyleFactory(style_elm)
@@ -475,6 +483,16 @@ class DescribeCharacterStyle:
 
 
 class DescribeParagraphStyle:
+    def it_knows_a_next_paragraph_style_that_has_no_type(self):
+        styles = element(
+            "w:styles/(w:style{w:type=paragraph,w:styleId=A}/w:next{w:val=B},w:style{w:styleId=B})"
+        )
+        style = ParagraphStyle(cast(CT_Style, styles[0]))
+
+        next_style = style.next_paragraph_style
+
+        assert next_style.style_id == "B"
+
     def it_knows_its_next_paragraph_style(self, next_get_fixture):
         style, expected_value = next_get_fixture
         assert style.next_paragraph_style == expected_value

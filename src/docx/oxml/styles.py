@@ -188,6 +188,17 @@ class CT_Style(BaseOxmlElement):
             return None
         return base_style
 
+    @property
+    def effective_type(self) -> WD_STYLE_TYPE:
+        """Style type of this `w:style`, `WD_STYLE_TYPE.PARAGRAPH` when `w:type` is absent.
+
+        `w:type` is optional and the schema default is paragraph. `.type` cannot carry
+        that default itself: assigning a descriptor's default removes the attribute, so new
+        paragraph styles would be written without `w:type`.
+        """
+        type_ = self.type
+        return WD_STYLE_TYPE.PARAGRAPH if type_ is None else type_
+
     def delete(self) -> None:
         """Remove this `w:style` element from its parent `w:styles` element."""
         self.getparent().remove(self)
@@ -366,7 +377,7 @@ class CT_Styles(BaseOxmlElement):
     def default_for(self, style_type: WD_STYLE_TYPE) -> CT_Style | None:
         """Return `w:style[@w:type="*{style_type}*][-1]` or |None| if not found."""
         default_styles_for_type = [
-            s for s in self._iter_styles() if s.type == style_type and s.default
+            s for s in self._iter_styles() if s.effective_type == style_type and s.default
         ]
         if not default_styles_for_type:
             return None

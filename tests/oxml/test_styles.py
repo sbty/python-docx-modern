@@ -11,6 +11,14 @@ from ..unitutil.cxml import element, xml
 
 
 class DescribeCT_Styles:
+    def it_finds_a_default_paragraph_style_that_has_no_type(self):
+        styles = cast(CT_Styles, element("w:styles/w:style{w:default=1,w:styleId=Normal}"))
+
+        default = styles.default_for(WD_STYLE_TYPE.PARAGRAPH)
+
+        assert default is not None
+        assert default.styleId == "Normal"
+
     def it_can_add_the_comment_styles_when_they_are_missing(self):
         styles = cast(CT_Styles, element("w:styles"))
 

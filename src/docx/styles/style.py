@@ -19,8 +19,7 @@ def StyleFactory(style_elm: CT_Style) -> BaseStyle:
         WD_STYLE_TYPE.CHARACTER: CharacterStyle,
         WD_STYLE_TYPE.TABLE: _TableStyle,
         WD_STYLE_TYPE.LIST: _NumberingStyle,
-        # -- a style without `w:type` raises KeyError here, as it always has --
-    }[cast("WD_STYLE_TYPE", style_elm.type)]
+    }[style_elm.effective_type]
 
     return style_cls(style_elm)
 
@@ -153,10 +152,7 @@ class BaseStyle(ElementProxy):
     def type(self) -> WD_STYLE_TYPE:
         """Member of :ref:`WdStyleType` corresponding to the type of this style, e.g.
         ``WD_STYLE_TYPE.PARAGRAPH``."""
-        type = self._style_elm.type
-        if type is None:
-            return WD_STYLE_TYPE.PARAGRAPH
-        return type
+        return self._style_elm.effective_type
 
     @property
     def unhide_when_used(self) -> bool:
@@ -226,7 +222,7 @@ class ParagraphStyle(CharacterStyle):
         next_style_elm = self._style_element.next_style
         if next_style_elm is None:
             return self
-        if next_style_elm.type != WD_STYLE_TYPE.PARAGRAPH:
+        if next_style_elm.effective_type != WD_STYLE_TYPE.PARAGRAPH:
             return self
         return cast(ParagraphStyle, StyleFactory(next_style_elm))
 

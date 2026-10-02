@@ -26,6 +26,9 @@ Unreleased (python-docx-modern fork)
   as `None`
 - Fix `Document.add_comment(text=None)` raising AttributeError; it now adds an empty
   comment, as `text=""` does
+- Treat a style without `w:type` as a paragraph style (the schema default) when
+  creating style objects, looking styles up by id, finding the default paragraph
+  style, and reading `next_paragraph_style`; `StyleFactory` raised KeyError before
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged

@@ -63,6 +63,14 @@ class DescribeStyles:
         with pytest.raises(ValueError, match="document already contains style 'Hea"):
             styles.add_style(name, None)
 
+    def it_finds_a_paragraph_style_that_has_no_type_by_id(self):
+        styles = Styles(cast(CT_Styles, element("w:styles/w:style{w:styleId=Foo}")))
+
+        style = styles.get_by_id("Foo", WD_STYLE_TYPE.PARAGRAPH)
+
+        assert style is not None
+        assert style.style_id == "Foo"
+
     def it_can_get_the_default_style_for_a_type(self, default_fixture):
         styles, style_type, StyleFactory_ = default_fixture[:3]
         StyleFactory_calls, style_ = default_fixture[3:]
