@@ -29,6 +29,8 @@ Unreleased (python-docx-modern fork)
 - Treat a style without `w:type` as a paragraph style (the schema default) when
   creating style objects, looking styles up by id, finding the default paragraph
   style, and reading `next_paragraph_style`; `StyleFactory` raised KeyError before
+- Fix #1541 `DocumentPart.numbering_part` raising NotImplementedError for a document
+  without a numbering part; an empty numbering part is now added
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged

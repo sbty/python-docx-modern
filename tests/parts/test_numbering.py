@@ -4,14 +4,40 @@ from typing import cast
 
 import pytest
 
+import docx
+from docx.opc.constants import CONTENT_TYPE as CT
+from docx.oxml.ns import qn
 from docx.oxml.numbering import CT_Numbering
+from docx.package import Package
 from docx.parts.numbering import NumberingPart, _NumberingDefinitions
 
 from ..oxml.unitdata.numbering import a_num, a_numbering
+from ..unitutil.file import test_file
 from ..unitutil.mock import class_mock, instance_mock
 
 
 class DescribeNumberingPart:
+    def it_constructs_a_new_empty_numbering_part(self):
+        package = Package()
+
+        numbering_part = NumberingPart.new(package)
+
+        assert isinstance(numbering_part, NumberingPart)
+        assert numbering_part.partname == "/word/numbering.xml"
+        assert numbering_part.content_type == CT.WML_NUMBERING
+        assert numbering_part.package is package
+        assert numbering_part.element.tag == qn("w:numbering")
+        assert len(numbering_part.element) == 0
+
+    # -- a document with no numbering part used to raise NotImplementedError (#1541) --
+    def it_is_added_to_a_document_that_has_none(self):
+        document = docx.Document(test_file("having-images.docx"))
+
+        numbering_part = document.part.numbering_part
+
+        assert len(numbering_part.numbering_definitions) == 0
+        assert document.part.numbering_part is numbering_part
+
     def it_provides_access_to_the_numbering_definitions(self, num_defs_fixture):
         (
             numbering_part,
