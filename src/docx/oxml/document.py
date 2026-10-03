@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 class CT_Document(BaseOxmlElement):
     """``<w:document>`` element, the root element of a document.xml file."""
 
+    # -- every document has a body, so it is typed as present even though the declaration
+    # -- is a `ZeroOrOne` --
     body: CT_Body = ZeroOrOne("w:body")  # type: ignore[assignment]
 
     @property

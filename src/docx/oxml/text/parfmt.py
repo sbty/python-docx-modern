@@ -144,7 +144,7 @@ class CT_PPr(BaseOxmlElement):
     jc: CT_Jc | None = ZeroOrOne(  # type: ignore[assignment]
         "w:jc", successors=_tag_seq[27:]
     )
-    outlineLvl: CT_DecimalNumber = ZeroOrOne(  # type: ignore[assignment]
+    outlineLvl: CT_DecimalNumber | None = ZeroOrOne(  # type: ignore[assignment]
         "w:outlineLvl", successors=_tag_seq[31:]
     )
     sectPr: CT_SectPr | None = ZeroOrOne(  # type: ignore[assignment]

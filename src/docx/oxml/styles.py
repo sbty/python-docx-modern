@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from typing import TYPE_CHECKING, Callable, cast
+from collections.abc import Callable, Iterator
+from typing import TYPE_CHECKING, cast
 
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml.ns import nsdecls
@@ -18,7 +18,7 @@ from docx.oxml.xmlchemy import (
 )
 
 
-def styleId_from_name(name):
+def styleId_from_name(name: str) -> str:
     """Return the style id corresponding to `name`, taking into account special-case
     names such as 'Heading 1'."""
     return {
@@ -45,24 +45,24 @@ class CT_LatentStyles(BaseOxmlElement):
 
     lsdException = ZeroOrMore("w:lsdException", successors=())
 
-    count: int | None = OptionalAttribute("w:count", ST_DecimalNumber)  # pyright: ignore[reportAssignmentType]
-    defLockedState: bool | None = OptionalAttribute("w:defLockedState", ST_OnOff)  # pyright: ignore[reportAssignmentType]
-    defQFormat: bool | None = OptionalAttribute("w:defQFormat", ST_OnOff)  # pyright: ignore[reportAssignmentType]
-    defSemiHidden: bool | None = OptionalAttribute("w:defSemiHidden", ST_OnOff)  # pyright: ignore[reportAssignmentType]
-    defUIPriority: int | None = OptionalAttribute("w:defUIPriority", ST_DecimalNumber)  # pyright: ignore[reportAssignmentType]
-    defUnhideWhenUsed: bool | None = OptionalAttribute("w:defUnhideWhenUsed", ST_OnOff)  # pyright: ignore[reportAssignmentType]
+    count: int | None = OptionalAttribute("w:count", ST_DecimalNumber)  # type: ignore[assignment]
+    defLockedState: bool | None = OptionalAttribute("w:defLockedState", ST_OnOff)  # type: ignore[assignment]
+    defQFormat: bool | None = OptionalAttribute("w:defQFormat", ST_OnOff)  # type: ignore[assignment]
+    defSemiHidden: bool | None = OptionalAttribute("w:defSemiHidden", ST_OnOff)  # type: ignore[assignment]
+    defUIPriority: int | None = OptionalAttribute("w:defUIPriority", ST_DecimalNumber)  # type: ignore[assignment]
+    defUnhideWhenUsed: bool | None = OptionalAttribute("w:defUnhideWhenUsed", ST_OnOff)  # type: ignore[assignment]
 
     def bool_prop(self, attr_name: str) -> bool:
         """Return the boolean value of the attribute having `attr_name`, or |False| if
         not present."""
-        value = getattr(self, attr_name)
+        value: bool | None = getattr(self, attr_name)
         if value is None:
             return False
         return value
 
     def get_by_name(self, name: str) -> CT_LsdException | None:
         """Return the `w:lsdException` child having `name`, or |None| if not found."""
-        found = self.xpath('w:lsdException[@w:name="%s"]' % name)
+        found: list[CT_LsdException] = self.xpath(f'w:lsdException[@w:name="{name}"]')
         if not found:
             return None
         return found[0]
@@ -76,21 +76,22 @@ class CT_LsdException(BaseOxmlElement):
     """``<w:lsdException>`` element, defining override visibility behaviors for a named
     latent style."""
 
-    locked: bool | None = OptionalAttribute("w:locked", ST_OnOff)  # pyright: ignore[reportAssignmentType]
-    name: str = RequiredAttribute("w:name", ST_String)  # pyright: ignore[reportAssignmentType]
-    qFormat: bool | None = OptionalAttribute("w:qFormat", ST_OnOff)  # pyright: ignore[reportAssignmentType]
-    semiHidden: bool | None = OptionalAttribute("w:semiHidden", ST_OnOff)  # pyright: ignore[reportAssignmentType]
-    uiPriority: int | None = OptionalAttribute("w:uiPriority", ST_DecimalNumber)  # pyright: ignore[reportAssignmentType]
-    unhideWhenUsed: bool | None = OptionalAttribute("w:unhideWhenUsed", ST_OnOff)  # pyright: ignore[reportAssignmentType]
+    locked: bool | None = OptionalAttribute("w:locked", ST_OnOff)  # type: ignore[assignment]
+    name: str = RequiredAttribute("w:name", ST_String)  # type: ignore[assignment]
+    qFormat: bool | None = OptionalAttribute("w:qFormat", ST_OnOff)  # type: ignore[assignment]
+    semiHidden: bool | None = OptionalAttribute("w:semiHidden", ST_OnOff)  # type: ignore[assignment]
+    uiPriority: int | None = OptionalAttribute("w:uiPriority", ST_DecimalNumber)  # type: ignore[assignment]
+    unhideWhenUsed: bool | None = OptionalAttribute("w:unhideWhenUsed", ST_OnOff)  # type: ignore[assignment]
 
     def delete(self) -> None:
         """Remove this `w:lsdException` element from the XML document."""
-        self.getparent().remove(self)
+        cast("_Element", self.getparent()).remove(self)
 
     def on_off_prop(self, attr_name: str) -> bool | None:
         """Return the boolean value of the attribute having `attr_name`, or |None| if
         not present."""
-        return getattr(self, attr_name)
+        value: bool | None = getattr(self, attr_name)
+        return value
 
     def set_on_off_prop(self, attr_name: str, value: bool | None) -> None:
         """Set the on/off attribute having `attr_name` to `value`."""
@@ -98,7 +99,9 @@ class CT_LsdException(BaseOxmlElement):
 
 
 if TYPE_CHECKING:
-    from docx.oxml.shared import CT_String
+    from lxml.etree import _Element  # pyright: ignore[reportPrivateUsage]
+
+    from docx.oxml.shared import CT_DecimalNumber, CT_OnOff, CT_String
     from docx.oxml.text.font import CT_RPr
     from docx.oxml.text.parfmt import CT_PPr
 
@@ -106,10 +109,24 @@ if TYPE_CHECKING:
 class CT_Style(BaseOxmlElement):
     """A ``<w:style>`` element, representing a style definition."""
 
+    get_or_add_basedOn: Callable[[], CT_String]
     get_or_add_next: Callable[[], CT_String]
-    _remove_next: Callable[[], None]
     get_or_add_pPr: Callable[[], CT_PPr]
     get_or_add_rPr: Callable[[], CT_RPr]
+    _add_locked: Callable[[], CT_OnOff]
+    _add_name: Callable[[], CT_String]
+    _add_qFormat: Callable[[], CT_OnOff]
+    _add_semiHidden: Callable[[], CT_OnOff]
+    _add_uiPriority: Callable[[], CT_DecimalNumber]
+    _add_unhideWhenUsed: Callable[[], CT_OnOff]
+    _remove_basedOn: Callable[[], None]
+    _remove_locked: Callable[[], None]
+    _remove_name: Callable[[], None]
+    _remove_next: Callable[[], None]
+    _remove_qFormat: Callable[[], None]
+    _remove_semiHidden: Callable[[], None]
+    _remove_uiPriority: Callable[[], None]
+    _remove_unhideWhenUsed: Callable[[], None]
 
     _tag_seq = (
         "w:name",
@@ -135,30 +152,46 @@ class CT_Style(BaseOxmlElement):
         "w:tcPr",
         "w:tblStylePr",
     )
-    name = ZeroOrOne("w:name", successors=_tag_seq[1:])
-    basedOn = ZeroOrOne("w:basedOn", successors=_tag_seq[3:])
-    next = ZeroOrOne("w:next", successors=_tag_seq[4:])
-    uiPriority = ZeroOrOne("w:uiPriority", successors=_tag_seq[8:])
-    semiHidden = ZeroOrOne("w:semiHidden", successors=_tag_seq[9:])
-    unhideWhenUsed = ZeroOrOne("w:unhideWhenUsed", successors=_tag_seq[10:])
-    qFormat = ZeroOrOne("w:qFormat", successors=_tag_seq[11:])
-    locked = ZeroOrOne("w:locked", successors=_tag_seq[12:])
-    pPr: CT_PPr | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    name: CT_String | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:name", successors=_tag_seq[1:]
+    )
+    basedOn: CT_String | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:basedOn", successors=_tag_seq[3:]
+    )
+    next: CT_String | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:next", successors=_tag_seq[4:]
+    )
+    uiPriority: CT_DecimalNumber | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:uiPriority", successors=_tag_seq[8:]
+    )
+    semiHidden: CT_OnOff | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:semiHidden", successors=_tag_seq[9:]
+    )
+    unhideWhenUsed: CT_OnOff | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:unhideWhenUsed", successors=_tag_seq[10:]
+    )
+    qFormat: CT_OnOff | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:qFormat", successors=_tag_seq[11:]
+    )
+    locked: CT_OnOff | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:locked", successors=_tag_seq[12:]
+    )
+    pPr: CT_PPr | None = ZeroOrOne(  # type: ignore[assignment]
         "w:pPr", successors=_tag_seq[17:]
     )
-    rPr: CT_RPr | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    rPr: CT_RPr | None = ZeroOrOne(  # type: ignore[assignment]
         "w:rPr", successors=_tag_seq[18:]
     )
     del _tag_seq
 
-    type: WD_STYLE_TYPE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    type: WD_STYLE_TYPE | None = OptionalAttribute(  # type: ignore[assignment]
         "w:type", WD_STYLE_TYPE
     )
-    styleId: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    styleId: str | None = OptionalAttribute(  # type: ignore[assignment]
         "w:styleId", ST_String
     )
-    default = OptionalAttribute("w:default", ST_OnOff)
-    customStyle: bool | None = OptionalAttribute("w:customStyle", ST_OnOff)  # pyright: ignore[reportAssignmentType]
+    default: bool | None = OptionalAttribute("w:default", ST_OnOff)  # type: ignore[assignment]
+    customStyle: bool | None = OptionalAttribute("w:customStyle", ST_OnOff)  # type: ignore[assignment]
 
     @property
     def basedOn_val(self) -> str | None:
@@ -182,7 +215,7 @@ class CT_Style(BaseOxmlElement):
         basedOn = self.basedOn
         if basedOn is None:
             return None
-        styles = self.getparent()
+        styles = cast("CT_Styles", self.getparent())
         base_style = styles.get_by_id(basedOn.val)
         if base_style is None:
             return None
@@ -201,7 +234,7 @@ class CT_Style(BaseOxmlElement):
 
     def delete(self) -> None:
         """Remove this `w:style` element from its parent `w:styles` element."""
-        self.getparent().remove(self)
+        cast("_Element", self.getparent()).remove(self)
 
     @property
     def locked_val(self) -> bool:
@@ -240,7 +273,7 @@ class CT_Style(BaseOxmlElement):
         next = self.next
         if next is None:
             return None
-        styles = self.getparent()
+        styles = cast("CT_Styles", self.getparent())
         return styles.get_by_id(next.val)  # None if not found
 
     @property
@@ -333,10 +366,13 @@ class CT_Styles(BaseOxmlElement):
     """``<w:styles>`` element, the root element of a styles part, i.e. styles.xml."""
 
     _tag_seq = ("w:docDefaults", "w:latentStyles", "w:style")
+    add_style: Callable[[], CT_Style]
     get_or_add_latentStyles: Callable[[], CT_LatentStyles]
     style_lst: list[CT_Style]
 
-    latentStyles = ZeroOrOne("w:latentStyles", successors=_tag_seq[2:])
+    latentStyles: CT_LatentStyles | None = ZeroOrOne(  # type: ignore[assignment]
+        "w:latentStyles", successors=_tag_seq[2:]
+    )
     style = ZeroOrMore("w:style", successors=())
     del _tag_seq
 
@@ -397,7 +433,7 @@ class CT_Styles(BaseOxmlElement):
 
         |None| if not found.
         """
-        xpath = 'w:style[w:name/@w:val="%s"]' % name
+        xpath = f'w:style[w:name/@w:val="{name}"]'
         return next(iter(self.xpath(xpath)), None)
 
     def _iter_styles(self) -> Iterator[CT_Style]:

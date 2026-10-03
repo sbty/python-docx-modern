@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
-from typing import TYPE_CHECKING, Callable, cast
+from collections.abc import Callable, Iterator
+from typing import TYPE_CHECKING, cast
 
 from docx.enum.table import (
     WD_CELL_VERTICAL_ALIGNMENT,
@@ -36,6 +36,8 @@ from docx.oxml.xmlchemy import (
 from docx.shared import Emu, Length, Twips
 
 if TYPE_CHECKING:
+    from lxml.etree import _Element  # pyright: ignore[reportPrivateUsage]
+
     from docx.oxml.shared import CT_OnOff, CT_String
     from docx.oxml.text.parfmt import CT_Jc
 
@@ -43,10 +45,10 @@ if TYPE_CHECKING:
 class CT_Height(BaseOxmlElement):
     """Used for `w:trHeight` to specify a row height and row height rule."""
 
-    val: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    val: Length | None = OptionalAttribute(  # type: ignore[assignment]
         "w:val", ST_TwipsMeasure
     )
-    hRule: WD_ROW_HEIGHT_RULE | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    hRule: WD_ROW_HEIGHT_RULE | None = OptionalAttribute(  # type: ignore[assignment]
         "w:hRule", WD_ROW_HEIGHT_RULE
     )
 
@@ -60,9 +62,9 @@ class CT_Row(BaseOxmlElement):
 
     tc_lst: list[CT_Tc]
     # -- custom inserter below --
-    tblPrEx: CT_TblPrEx | None = ZeroOrOne("w:tblPrEx")  # pyright: ignore[reportAssignmentType]
+    tblPrEx: CT_TblPrEx | None = ZeroOrOne("w:tblPrEx")  # type: ignore[assignment]
     # -- custom inserter below --
-    trPr: CT_TrPr | None = ZeroOrOne("w:trPr")  # pyright: ignore[reportAssignmentType]
+    trPr: CT_TrPr | None = ZeroOrOne("w:trPr")  # type: ignore[assignment]
     tc = ZeroOrMore("w:tc")
 
     @property
@@ -117,7 +119,7 @@ class CT_Row(BaseOxmlElement):
         return trPr.trHeight_hRule
 
     @trHeight_hRule.setter
-    def trHeight_hRule(self, value: WD_ROW_HEIGHT_RULE | None):
+    def trHeight_hRule(self, value: WD_ROW_HEIGHT_RULE | None) -> None:
         trPr = self.get_or_add_trPr()
         trPr.trHeight_hRule = value
 
@@ -130,21 +132,21 @@ class CT_Row(BaseOxmlElement):
         return trPr.trHeight_val
 
     @trHeight_val.setter
-    def trHeight_val(self, value: Length | None):
+    def trHeight_val(self, value: Length | None) -> None:
         trPr = self.get_or_add_trPr()
         trPr.trHeight_val = value
 
-    def _insert_tblPrEx(self, tblPrEx: CT_TblPrEx):
+    def _insert_tblPrEx(self, tblPrEx: CT_TblPrEx) -> None:
         self.insert(0, tblPrEx)
 
-    def _insert_trPr(self, trPr: CT_TrPr):
+    def _insert_trPr(self, trPr: CT_TrPr) -> None:
         tblPrEx = self.tblPrEx
         if tblPrEx is not None:
             tblPrEx.addnext(trPr)
         else:
             self.insert(0, trPr)
 
-    def _new_tc(self):
+    def _new_tc(self) -> CT_Tc:
         return CT_Tc.new()
 
 
@@ -154,8 +156,8 @@ class CT_Tbl(BaseOxmlElement):
     add_tr: Callable[[], CT_Row]
     tr_lst: list[CT_Row]
 
-    tblPr: CT_TblPr = OneAndOnlyOne("w:tblPr")  # pyright: ignore[reportAssignmentType]
-    tblGrid: CT_TblGrid = OneAndOnlyOne("w:tblGrid")  # pyright: ignore[reportAssignmentType]
+    tblPr: CT_TblPr = OneAndOnlyOne("w:tblPr")  # type: ignore[assignment]
+    tblGrid: CT_TblGrid = OneAndOnlyOne("w:tblGrid")  # type: ignore[assignment]
     tr = ZeroOrMore("w:tr")
 
     @property
@@ -170,7 +172,7 @@ class CT_Tbl(BaseOxmlElement):
         return bidiVisual.val
 
     @bidiVisual_val.setter
-    def bidiVisual_val(self, value: WD_TABLE_DIRECTION | None):
+    def bidiVisual_val(self, value: WD_TABLE_DIRECTION | None) -> None:
         tblPr = self.tblPr
         if value is None:
             tblPr._remove_bidiVisual()  # pyright: ignore[reportPrivateUsage]
@@ -190,8 +192,7 @@ class CT_Tbl(BaseOxmlElement):
         row, etc.
         """
         for tr in self.tr_lst:
-            for tc in tr.tc_lst:
-                yield tc
+            yield from tr.tc_lst
 
     @classmethod
     def new_tbl(cls, rows: int, cols: int, width: Length) -> CT_Tbl:
@@ -241,7 +242,7 @@ class CT_Tbl(BaseOxmlElement):
     def _tblGrid_xml(cls, col_count: int, col_width: Length) -> str:
         xml = "  <w:tblGrid>\n"
         for _ in range(col_count):
-            xml += '    <w:gridCol w:w="%d"/>\n' % col_width.twips
+            xml += f'    <w:gridCol w:w="{col_width.twips:d}"/>\n'
         xml += "  </w:tblGrid>\n"
         return xml
 
@@ -276,7 +277,7 @@ class CT_TblGrid(BaseOxmlElement):
 class CT_TblGridCol(BaseOxmlElement):
     """`w:gridCol` element, child of `w:tblGrid`, defines a table column."""
 
-    w: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    w: Length | None = OptionalAttribute(  # type: ignore[assignment]
         "w:w", ST_TwipsMeasure
     )
 
@@ -294,7 +295,7 @@ class CT_TblLayoutType(BaseOxmlElement):
     content.
     """
 
-    type: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    type: str | None = OptionalAttribute(  # type: ignore[assignment]
         "w:type", ST_TblLayoutType
     )
 
@@ -331,16 +332,16 @@ class CT_TblPr(BaseOxmlElement):
         "w:tblDescription",
         "w:tblPrChange",
     )
-    tblStyle: CT_String | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    tblStyle: CT_String | None = ZeroOrOne(  # type: ignore[assignment]
         "w:tblStyle", successors=_tag_seq[1:]
     )
-    bidiVisual: CT_OnOff | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    bidiVisual: CT_OnOff | None = ZeroOrOne(  # type: ignore[assignment]
         "w:bidiVisual", successors=_tag_seq[4:]
     )
-    jc: CT_Jc | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    jc: CT_Jc | None = ZeroOrOne(  # type: ignore[assignment]
         "w:jc", successors=_tag_seq[8:]
     )
-    tblLayout: CT_TblLayoutType | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    tblLayout: CT_TblLayoutType | None = ZeroOrOne(  # type: ignore[assignment]
         "w:tblLayout", successors=_tag_seq[13:]
     )
     del _tag_seq
@@ -360,7 +361,7 @@ class CT_TblPr(BaseOxmlElement):
         return next((a for a in WD_TABLE_ALIGNMENT if a.xml_value == xml_value), None)
 
     @alignment.setter
-    def alignment(self, value: WD_TABLE_ALIGNMENT | None):
+    def alignment(self, value: WD_TABLE_ALIGNMENT | None) -> None:
         self._remove_jc()
         if value is None:
             return
@@ -377,12 +378,12 @@ class CT_TblPr(BaseOxmlElement):
         return True if tblLayout is None else tblLayout.type != "fixed"
 
     @autofit.setter
-    def autofit(self, value: bool):
+    def autofit(self, value: bool) -> None:
         tblLayout = self.get_or_add_tblLayout()
         tblLayout.type = "autofit" if value else "fixed"
 
     @property
-    def style(self):
+    def style(self) -> str | None:
         """Return the value of the ``val`` attribute of the ``<w:tblStyle>`` child or
         |None| if not present."""
         tblStyle = self.tblStyle
@@ -391,7 +392,7 @@ class CT_TblPr(BaseOxmlElement):
         return tblStyle.val
 
     @style.setter
-    def style(self, value: str | None):
+    def style(self, value: str | None) -> None:
         self._remove_tblStyle()
         if value is None:
             return
@@ -413,10 +414,10 @@ class CT_TblWidth(BaseOxmlElement):
     # the type for `w` attr is actually ST_MeasurementOrPercent, but using
     # ST_TblWidthTwips for now because only dxa (twips) values are being used. It's not
     # entirely clear what the semantics are for other values like -01.4mm
-    w: int = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+    w: int = RequiredAttribute(  # type: ignore[assignment]
         "w:w", ST_TblWidthTwips
     )
-    type = RequiredAttribute("w:type", ST_TblWidth)
+    type: str = RequiredAttribute("w:type", ST_TblWidth)  # type: ignore[assignment]
 
     @property
     def width(self) -> Length | None:
@@ -426,7 +427,7 @@ class CT_TblWidth(BaseOxmlElement):
         return Twips(self.w)
 
     @width.setter
-    def width(self, value: Length):
+    def width(self, value: Length) -> None:
         self.type = "dxa"
         self.w = Emu(value).twips
 
@@ -442,7 +443,7 @@ class CT_Tc(BaseOxmlElement):
     _new_p: Callable[[], CT_P]
 
     # -- tcPr has many successors, `._insert_tcPr()` is overridden below --
-    tcPr: CT_TcPr | None = ZeroOrOne("w:tcPr")  # pyright: ignore[reportAssignmentType]
+    tcPr: CT_TcPr | None = ZeroOrOne("w:tcPr")  # type: ignore[assignment]
     p = OneOrMore("w:p")
     tbl = OneOrMore("w:tbl")
 
@@ -477,9 +478,8 @@ class CT_Tc(BaseOxmlElement):
         A cell in the leftmost grid-column has offset 0.
         """
         grid_before = self._tr.grid_before
-        preceding_tc_grid_spans = sum(
-            tc.grid_span for tc in self.xpath("./preceding-sibling::w:tc")
-        )
+        preceding_tcs: list[CT_Tc] = self.xpath("./preceding-sibling::w:tc")
+        preceding_tc_grid_spans = sum(tc.grid_span for tc in preceding_tcs)
         return grid_before + preceding_tc_grid_spans
 
     @property
@@ -492,7 +492,7 @@ class CT_Tc(BaseOxmlElement):
         return 1 if tcPr is None else tcPr.grid_span
 
     @grid_span.setter
-    def grid_span(self, value: int):
+    def grid_span(self, value: int) -> None:
         tcPr = self.get_or_add_tcPr()
         tcPr.grid_span = value
 
@@ -503,9 +503,9 @@ class CT_Tc(BaseOxmlElement):
         Elements appear in document order. Elements shaded by nesting in a `w:ins` or
         other "wrapper" element will not be included.
         """
-        return self.xpath("./w:p | ./w:tbl")
+        return cast("list[CT_P | CT_Tbl]", self.xpath("./w:p | ./w:tbl"))
 
-    def iter_block_items(self):
+    def iter_block_items(self) -> Iterator[_Element]:
         """Generate a reference to each of the block-level content elements in this
         cell, in the order they appear."""
         block_item_tags = (qn("w:p"), qn("w:tbl"), qn("w:sdt"))
@@ -532,7 +532,7 @@ class CT_Tc(BaseOxmlElement):
     @classmethod
     def new(cls) -> CT_Tc:
         """A new `w:tc` element, containing an empty paragraph as the required EG_BlockLevelElt."""
-        return cast(CT_Tc, parse_xml("<w:tc %s><w:p/></w:tc>" % nsdecls("w")))
+        return cast(CT_Tc, parse_xml(f"<w:tc {nsdecls('w')}><w:p/></w:tc>"))
 
     @property
     def right(self) -> int:
@@ -560,7 +560,7 @@ class CT_Tc(BaseOxmlElement):
         return tcPr.vMerge_val
 
     @vMerge.setter
-    def vMerge(self, value: str | None):
+    def vMerge(self, value: str | None) -> None:
         tcPr = self.get_or_add_tcPr()
         tcPr.vMerge_val = value
 
@@ -573,11 +573,11 @@ class CT_Tc(BaseOxmlElement):
         return tcPr.width
 
     @width.setter
-    def width(self, value: Length):
+    def width(self, value: Length) -> None:
         tcPr = self.get_or_add_tcPr()
         tcPr.width = value
 
-    def _add_width_of(self, other_tc: CT_Tc):
+    def _add_width_of(self, other_tc: CT_Tc) -> None:
         """Add the width of `other_tc` to this cell.
 
         Does nothing if either this tc or `other_tc` does not have a specified width.
@@ -585,14 +585,14 @@ class CT_Tc(BaseOxmlElement):
         if self.width and other_tc.width:
             self.width = Length(self.width + other_tc.width)
 
-    def _grow_to(self, width: int, height: int, top_tc: CT_Tc | None = None):
+    def _grow_to(self, width: int, height: int, top_tc: CT_Tc | None = None) -> None:
         """Grow this cell to `width` grid columns and `height` rows.
 
         This is accomplished by expanding horizontal spans and creating continuation
         cells to form vertical spans.
         """
 
-        def vMerge_val(top_tc: CT_Tc):
+        def vMerge_val(top_tc: CT_Tc) -> str | None:
             return (
                 ST_Merge.CONTINUE
                 if top_tc is not self
@@ -626,7 +626,7 @@ class CT_Tc(BaseOxmlElement):
         only_item = block_items[0]
         return isinstance(only_item, CT_P) and len(only_item.r_lst) == 0
 
-    def _move_content_to(self, other_tc: CT_Tc):
+    def _move_content_to(self, other_tc: CT_Tc) -> None:
         """Append the content of this cell to `other_tc`.
 
         Leaves this cell with a single empty ``<w:p>`` element.
@@ -654,13 +654,13 @@ class CT_Tc(BaseOxmlElement):
         following_tcs = self.xpath("./following-sibling::w:tc")
         return following_tcs[0] if following_tcs else None
 
-    def _remove(self):
+    def _remove(self) -> None:
         """Remove this `w:tc` element from the XML tree."""
         parent_element = self.getparent()
         assert parent_element is not None
         parent_element.remove(self)
 
-    def _remove_trailing_empty_p(self):
+    def _remove_trailing_empty_p(self) -> None:
         """Remove last content element from this cell if it's an empty `w:p` element."""
         block_items = list(self.iter_block_items())
         last_content_elm = block_items[-1]
@@ -676,13 +676,13 @@ class CT_Tc(BaseOxmlElement):
         merged cell formed by using this tc and `other_tc` as opposite corner
         extents."""
 
-        def raise_on_inverted_L(a: CT_Tc, b: CT_Tc):
+        def raise_on_inverted_L(a: CT_Tc, b: CT_Tc) -> None:
             if a.top == b.top and a.bottom != b.bottom:
                 raise InvalidSpanError("requested span not rectangular")
             if a.left == b.left and a.right != b.right:
                 raise InvalidSpanError("requested span not rectangular")
 
-        def raise_on_tee_shaped(a: CT_Tc, b: CT_Tc):
+        def raise_on_tee_shaped(a: CT_Tc, b: CT_Tc) -> None:
             top_most, other = (a, b) if a.top < b.top else (b, a)
             if top_most.top < other.top and top_most.bottom > other.bottom:
                 raise InvalidSpanError("requested span not rectangular")
@@ -701,7 +701,7 @@ class CT_Tc(BaseOxmlElement):
 
         return top, left, bottom - top, right - left
 
-    def _span_to_width(self, grid_width: int, top_tc: CT_Tc, vMerge: str | None):
+    def _span_to_width(self, grid_width: int, top_tc: CT_Tc, vMerge: str | None) -> None:
         """Incorporate `w:tc` elements to the right until this cell spans `grid_width`.
 
         Incorporated `w:tc` elements are removed (replaced by gridSpan value).
@@ -718,7 +718,7 @@ class CT_Tc(BaseOxmlElement):
             self._swallow_next_tc(grid_width, top_tc)
         self.vMerge = vMerge
 
-    def _swallow_next_tc(self, grid_width: int, top_tc: CT_Tc):
+    def _swallow_next_tc(self, grid_width: int, top_tc: CT_Tc) -> None:
         """Extend the horizontal span of this `w:tc` element to incorporate the
         following `w:tc` element in the row and then delete that following `w:tc`
         element.
@@ -729,7 +729,7 @@ class CT_Tc(BaseOxmlElement):
         than `grid_width` or if there is no next `<w:tc>` element in the row.
         """
 
-        def raise_on_invalid_swallow(next_tc: CT_Tc | None):
+        def raise_on_invalid_swallow(next_tc: CT_Tc | None) -> None:
             if next_tc is None:
                 raise InvalidSpanError("not enough grid columns")
             if self.grid_span + next_tc.grid_span > grid_width:
@@ -772,7 +772,9 @@ class CT_Tc(BaseOxmlElement):
 
         Raises |ValueError| if called on a cell in the top-most row.
         """
-        tr_aboves = self.xpath("./ancestor::w:tr[position()=1]/preceding-sibling::w:tr[1]")
+        tr_aboves: list[CT_Row] = self.xpath(
+            "./ancestor::w:tr[position()=1]/preceding-sibling::w:tr[1]"
+        )
         if not tr_aboves:
             raise ValueError("no tr above topmost tr in w:tbl")
         return tr_aboves[0]
@@ -825,16 +827,16 @@ class CT_TcPr(BaseOxmlElement):
         "w:cellMerge",
         "w:tcPrChange",
     )
-    tcW: CT_TblWidth | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    tcW: CT_TblWidth | None = ZeroOrOne(  # type: ignore[assignment]
         "w:tcW", successors=_tag_seq[2:]
     )
-    gridSpan: CT_DecimalNumber | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    gridSpan: CT_DecimalNumber | None = ZeroOrOne(  # type: ignore[assignment]
         "w:gridSpan", successors=_tag_seq[3:]
     )
-    vMerge: CT_VMerge | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    vMerge: CT_VMerge | None = ZeroOrOne(  # type: ignore[assignment]
         "w:vMerge", successors=_tag_seq[5:]
     )
-    vAlign: CT_VerticalJc | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    vAlign: CT_VerticalJc | None = ZeroOrOne(  # type: ignore[assignment]
         "w:vAlign", successors=_tag_seq[12:]
     )
     del _tag_seq
@@ -849,7 +851,7 @@ class CT_TcPr(BaseOxmlElement):
         return 1 if gridSpan is None else gridSpan.val
 
     @grid_span.setter
-    def grid_span(self, value: int):
+    def grid_span(self, value: int) -> None:
         self._remove_gridSpan()
         if value > 1:
             self.get_or_add_gridSpan().val = value
@@ -867,14 +869,14 @@ class CT_TcPr(BaseOxmlElement):
         return vAlign.val
 
     @vAlign_val.setter
-    def vAlign_val(self, value: WD_CELL_VERTICAL_ALIGNMENT | None):
+    def vAlign_val(self, value: WD_CELL_VERTICAL_ALIGNMENT | None) -> None:
         if value is None:
             self._remove_vAlign()
             return
         self.get_or_add_vAlign().val = value
 
     @property
-    def vMerge_val(self):
+    def vMerge_val(self) -> str | None:
         """The value of the ./w:vMerge/@val attribute, or |None| if the w:vMerge element
         is not present."""
         vMerge = self.vMerge
@@ -883,7 +885,7 @@ class CT_TcPr(BaseOxmlElement):
         return vMerge.val
 
     @vMerge_val.setter
-    def vMerge_val(self, value: str | None):
+    def vMerge_val(self, value: str | None) -> None:
         self._remove_vMerge()
         if value is not None:
             self._add_vMerge().val = value
@@ -897,7 +899,7 @@ class CT_TcPr(BaseOxmlElement):
         return tcW.width
 
     @width.setter
-    def width(self, value: Length):
+    def width(self, value: Length) -> None:
         tcW = self.get_or_add_tcW()
         tcW.width = value
 
@@ -924,13 +926,13 @@ class CT_TrPr(BaseOxmlElement):
         "w:del",
         "w:trPrChange",
     )
-    gridAfter: CT_DecimalNumber | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    gridAfter: CT_DecimalNumber | None = ZeroOrOne(  # type: ignore[assignment]
         "w:gridAfter", successors=_tag_seq[4:]
     )
-    gridBefore: CT_DecimalNumber | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    gridBefore: CT_DecimalNumber | None = ZeroOrOne(  # type: ignore[assignment]
         "w:gridBefore", successors=_tag_seq[3:]
     )
-    trHeight: CT_Height | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    trHeight: CT_Height | None = ZeroOrOne(  # type: ignore[assignment]
         "w:trHeight", successors=_tag_seq[8:]
     )
     del _tag_seq
@@ -954,7 +956,7 @@ class CT_TrPr(BaseOxmlElement):
         return None if trHeight is None else trHeight.hRule
 
     @trHeight_hRule.setter
-    def trHeight_hRule(self, value: WD_ROW_HEIGHT_RULE | None):
+    def trHeight_hRule(self, value: WD_ROW_HEIGHT_RULE | None) -> None:
         if value is None and self.trHeight is None:
             return
         trHeight = self.get_or_add_trHeight()
@@ -967,7 +969,7 @@ class CT_TrPr(BaseOxmlElement):
         return None if trHeight is None else trHeight.val
 
     @trHeight_val.setter
-    def trHeight_val(self, value: Length | None):
+    def trHeight_val(self, value: Length | None) -> None:
         if value is None and self.trHeight is None:
             return
         trHeight = self.get_or_add_trHeight()
@@ -977,7 +979,7 @@ class CT_TrPr(BaseOxmlElement):
 class CT_VerticalJc(BaseOxmlElement):
     """`w:vAlign` element, specifying vertical alignment of cell."""
 
-    val: WD_CELL_VERTICAL_ALIGNMENT = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+    val: WD_CELL_VERTICAL_ALIGNMENT = RequiredAttribute(  # type: ignore[assignment]
         "w:val", WD_CELL_VERTICAL_ALIGNMENT
     )
 
@@ -985,6 +987,6 @@ class CT_VerticalJc(BaseOxmlElement):
 class CT_VMerge(BaseOxmlElement):
     """``<w:vMerge>`` element, specifying vertical merging behavior of a cell."""
 
-    val: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    val: str | None = OptionalAttribute(  # type: ignore[assignment]
         "w:val", ST_Merge, default=ST_Merge.CONTINUE
     )
