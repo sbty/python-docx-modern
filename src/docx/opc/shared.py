@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
 
 _T = TypeVar("_T")
 
 
-class CaseInsensitiveDict(Dict[str, Any]):
+class CaseInsensitiveDict(dict[str, str]):
     """Mapping type that behaves like dict except that it matches without respect to the
     case of the key.
 
@@ -16,16 +17,16 @@ class CaseInsensitiveDict(Dict[str, Any]):
     passed in constructor are not accounted for
     """
 
-    def __contains__(self, key):
-        return super(CaseInsensitiveDict, self).__contains__(key.lower())
+    def __contains__(self, key: object) -> bool:
+        return super().__contains__(cast(str, key).lower())
 
-    def __getitem__(self, key):
-        return super(CaseInsensitiveDict, self).__getitem__(key.lower())
+    def __getitem__(self, key: str) -> str:
+        return super().__getitem__(key.lower())
 
-    def __setitem__(self, key, value):
-        return super(CaseInsensitiveDict, self).__setitem__(key.lower(), value)
+    def __setitem__(self, key: str, value: str) -> None:
+        return super().__setitem__(key.lower(), value)
 
 
-def cls_method_fn(cls: type, method_name: str):
+def cls_method_fn(cls: type, method_name: str) -> Callable[..., Any]:
     """Return method of `cls` having `method_name`."""
-    return getattr(cls, method_name)
+    return cast("Callable[..., Any]", getattr(cls, method_name))

@@ -61,7 +61,7 @@ class DescribePackageReader:
             Mock(name="spart1", partname="pn1", srels=["srel3", "srel4"]),
             Mock(name="spart2", partname="pn2", srels=["srel5", "srel6"]),
         ]
-        pkg_reader = PackageReader(None, pkg_srels, sparts)
+        pkg_reader = PackageReader(None, pkg_srels, sparts)  # pyright: ignore[reportArgumentType]
         # exercise ---------------------
         generated_tuples = list(pkg_reader.iter_srels())
         # verify -----------------------
@@ -92,7 +92,7 @@ class DescribePackageReader:
             Mock(name="spart_2"),
         )
         # exercise ---------------------
-        retval = PackageReader._load_serialized_parts(phys_reader, pkg_srels, content_types)
+        retval = PackageReader._load_serialized_parts(phys_reader, pkg_srels, content_types)  # pyright: ignore[reportArgumentType]
         # verify -----------------------
         expected_calls = [
             call("/part/name1.xml", "app/vnd.type_1", "<Part_1/>", "reltype1", "srels_1"),
@@ -154,7 +154,7 @@ class DescribePackageReader:
         _srels_for.side_effect = [part_1_srels, part_2_srels, part_3_srels]
         phys_reader.blob_for.side_effect = [part_1_blob, part_2_blob, part_3_blob]
         # exercise ---------------------
-        generated_tuples = list(PackageReader._walk_phys_parts(phys_reader, pkg_srels))
+        generated_tuples = list(PackageReader._walk_phys_parts(phys_reader, pkg_srels))  # pyright: ignore[reportArgumentType]
         # verify -----------------------
         expected_tuples = [
             (partname_1, part_1_blob, reltype1, part_1_srels),
@@ -201,7 +201,7 @@ class DescribePackageReader:
 
     @pytest.fixture
     def iter_sparts_fixture(self, sparts_, partnames_, content_types_, reltypes_, blobs_):
-        pkg_reader = PackageReader(None, None, sparts_)
+        pkg_reader = PackageReader(None, None, sparts_)  # pyright: ignore[reportArgumentType]
         expected_iter_spart_items = [
             (partnames_[0], content_types_[0], reltypes_[0], blobs_[0]),
             (partnames_[1], content_types_[1], reltypes_[1], blobs_[1]),
@@ -288,7 +288,7 @@ class Describe_ContentTypeMap:
         ct_map = _ContentTypeMap()
         ct_map._overrides = {PackURI("/part/name1.xml"): "app/vnd.type1"}
         with pytest.raises(KeyError):
-            ct_map["/part/name1.xml"]
+            ct_map["/part/name1.xml"]  # pyright: ignore[reportArgumentType]
 
     # fixtures ---------------------------------------------
 
@@ -373,7 +373,7 @@ class Describe_SerializedPart:
         blob = "<Part/>"
         srels = "srels proxy"
         # exercise ---------------------
-        spart = _SerializedPart(partname, content_type, reltype, blob, srels)
+        spart = _SerializedPart(partname, content_type, reltype, blob, srels)  # pyright: ignore[reportArgumentType]
         # verify -----------------------
         assert spart.partname == partname
         assert spart.content_type == content_type
@@ -411,7 +411,7 @@ class Describe_SerializedRelationship:
                 target_ref=None,
                 target_mode=target_mode,
             )
-            srel = _SerializedRelationship(None, rel_elm)
+            srel = _SerializedRelationship(None, rel_elm)  # pyright: ignore[reportArgumentType]
             assert srel.is_external is expected_value
 
     def it_can_calculate_its_target_partname(self):

@@ -33,7 +33,7 @@ nsmap = {
 # ===========================================================================
 
 
-def parse_xml(text: str) -> etree._Element:
+def parse_xml(text: str | bytes) -> etree._Element:
     """`etree.fromstring()` replacement that uses oxml parser."""
     return etree.fromstring(text, oxml_parser)
 
@@ -47,7 +47,7 @@ def qn(tag: str) -> str:
     """
     prefix, tagroot = tag.split(":")
     uri = nsmap[prefix]
-    return "{%s}%s" % (uri, tagroot)
+    return f"{{{uri}}}{tagroot}"
 
 
 def serialize_part_xml(part_elm: etree._Element) -> bytes:
@@ -92,21 +92,23 @@ class CT_Default(BaseOxmlElement):
     """
 
     @property
-    def content_type(self):
+    def content_type(self) -> str:
         """String held in the ``ContentType`` attribute of this ``<Default>``
         element."""
-        return self.get("ContentType")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("ContentType"))
 
     @property
-    def extension(self):
+    def extension(self) -> str:
         """String held in the ``Extension`` attribute of this ``<Default>`` element."""
-        return self.get("Extension")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("Extension"))
 
     @staticmethod
-    def new(ext: str, content_type: str):
+    def new(ext: str, content_type: str) -> CT_Default:
         """Return a new ``<Default>`` element with attributes set to parameter values."""
-        xml = '<Default xmlns="%s"/>' % nsmap["ct"]
-        default = parse_xml(xml)
+        xml = f'<Default xmlns="{nsmap["ct"]}"/>'
+        default = cast(CT_Default, parse_xml(xml))
         default.set("Extension", ext)
         default.set("ContentType", content_type)
         return default
@@ -117,34 +119,38 @@ class CT_Override(BaseOxmlElement):
     the specified partname."""
 
     @property
-    def content_type(self):
+    def content_type(self) -> str:
         """String held in the ``ContentType`` attribute of this ``<Override>``
         element."""
-        return self.get("ContentType")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("ContentType"))
 
     @staticmethod
-    def new(partname, content_type):
+    def new(partname: str, content_type: str) -> CT_Override:
         """Return a new ``<Override>`` element with attributes set to parameter values."""
-        xml = '<Override xmlns="%s"/>' % nsmap["ct"]
-        override = parse_xml(xml)
+        xml = f'<Override xmlns="{nsmap["ct"]}"/>'
+        override = cast(CT_Override, parse_xml(xml))
         override.set("PartName", partname)
         override.set("ContentType", content_type)
         return override
 
     @property
-    def partname(self):
+    def partname(self) -> str:
         """String held in the ``PartName`` attribute of this ``<Override>`` element."""
-        return self.get("PartName")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("PartName"))
 
 
 class CT_Relationship(BaseOxmlElement):
     """`<Relationship>` element, representing a single relationship from source to target part."""
 
     @staticmethod
-    def new(rId: str, reltype: str, target: str, target_mode: str = RTM.INTERNAL):
+    def new(
+        rId: str, reltype: str, target: str, target_mode: str = RTM.INTERNAL
+    ) -> CT_Relationship:
         """Return a new ``<Relationship>`` element."""
-        xml = '<Relationship xmlns="%s"/>' % nsmap["pr"]
-        relationship = parse_xml(xml)
+        xml = f'<Relationship xmlns="{nsmap["pr"]}"/>'
+        relationship = cast(CT_Relationship, parse_xml(xml))
         relationship.set("Id", rId)
         relationship.set("Type", reltype)
         relationship.set("Target", target)
@@ -153,23 +159,26 @@ class CT_Relationship(BaseOxmlElement):
         return relationship
 
     @property
-    def rId(self):
+    def rId(self) -> str:
         """String held in the ``Id`` attribute of this ``<Relationship>`` element."""
-        return self.get("Id")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("Id"))
 
     @property
-    def reltype(self):
+    def reltype(self) -> str:
         """String held in the ``Type`` attribute of this ``<Relationship>`` element."""
-        return self.get("Type")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("Type"))
 
     @property
-    def target_ref(self):
+    def target_ref(self) -> str:
         """String held in the ``Target`` attribute of this ``<Relationship>``
         element."""
-        return self.get("Target")
+        # -- a required attribute in the schema --
+        return cast(str, self.get("Target"))
 
     @property
-    def target_mode(self):
+    def target_mode(self) -> str:
         """String held in the ``TargetMode`` attribute of this ``<Relationship>``
         element, either ``Internal`` or ``External``.
 
@@ -181,7 +190,7 @@ class CT_Relationship(BaseOxmlElement):
 class CT_Relationships(BaseOxmlElement):
     """``<Relationships>`` element, the root element in a .rels file."""
 
-    def add_rel(self, rId: str, reltype: str, target: str, is_external: bool = False):
+    def add_rel(self, rId: str, reltype: str, target: str, is_external: bool = False) -> None:
         """Add a child ``<Relationship>`` element with attributes set according to
         parameter values."""
         target_mode = RTM.EXTERNAL if is_external else RTM.INTERNAL
@@ -191,16 +200,16 @@ class CT_Relationships(BaseOxmlElement):
     @staticmethod
     def new() -> CT_Relationships:
         """Return a new ``<Relationships>`` element."""
-        xml = '<Relationships xmlns="%s"/>' % nsmap["pr"]
+        xml = f'<Relationships xmlns="{nsmap["pr"]}"/>'
         return cast(CT_Relationships, parse_xml(xml))
 
     @property
-    def Relationship_lst(self):
+    def Relationship_lst(self) -> list[CT_Relationship]:
         """Return a list containing all the ``<Relationship>`` child elements."""
-        return self.findall(qn("pr:Relationship"))
+        return cast("list[CT_Relationship]", self.findall(qn("pr:Relationship")))
 
     @property
-    def xml(self):
+    def xml(self) -> bytes:  # type: ignore[override]
         """Return XML string for this element, suitable for saving in a .rels stream,
         not pretty printed and with an XML declaration at the top."""
         return serialize_part_xml(self)
@@ -210,31 +219,31 @@ class CT_Types(BaseOxmlElement):
     """``<Types>`` element, the container element for Default and Override elements in
     [Content_Types].xml."""
 
-    def add_default(self, ext, content_type):
+    def add_default(self, ext: str, content_type: str) -> None:
         """Add a child ``<Default>`` element with attributes set to parameter values."""
         default = CT_Default.new(ext, content_type)
         self.append(default)
 
-    def add_override(self, partname, content_type):
+    def add_override(self, partname: str, content_type: str) -> None:
         """Add a child ``<Override>`` element with attributes set to parameter
         values."""
         override = CT_Override.new(partname, content_type)
         self.append(override)
 
     @property
-    def defaults(self):
-        return self.findall(qn("ct:Default"))
+    def defaults(self) -> list[CT_Default]:
+        return cast("list[CT_Default]", self.findall(qn("ct:Default")))
 
     @staticmethod
-    def new():
+    def new() -> CT_Types:
         """Return a new ``<Types>`` element."""
-        xml = '<Types xmlns="%s"/>' % nsmap["ct"]
-        types = parse_xml(xml)
+        xml = f'<Types xmlns="{nsmap["ct"]}"/>'
+        types = cast(CT_Types, parse_xml(xml))
         return types
 
     @property
-    def overrides(self):
-        return self.findall(qn("ct:Override"))
+    def overrides(self) -> list[CT_Override]:
+        return cast("list[CT_Override]", self.findall(qn("ct:Override")))
 
 
 ct_namespace = element_class_lookup.get_namespace(nsmap["ct"])

@@ -4,7 +4,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Type, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, cast
+
+from typing_extensions import Self
 
 from docx.opc.oxml import serialize_part_xml
 from docx.opc.packuri import PackURI
@@ -14,6 +17,7 @@ from docx.oxml.parser import parse_xml
 from docx.shared import lazyproperty
 
 if TYPE_CHECKING:
+    from docx.opc.rel import _Relationship  # pyright: ignore[reportPrivateUsage]
     from docx.oxml.xmlchemy import BaseOxmlElement
     from docx.package import Package
 
@@ -31,14 +35,14 @@ class Part:
         content_type: str,
         blob: bytes | None = None,
         package: Package | None = None,
-    ):
-        super(Part, self).__init__()
+    ) -> None:
+        super().__init__()
         self._partname = partname
         self._content_type = content_type
         self._blob = blob
         self._package = package
 
-    def after_unmarshal(self):
+    def after_unmarshal(self) -> None:
         """Entry point for post-unmarshaling processing, for example to parse the part
         XML.
 
@@ -48,7 +52,7 @@ class Part:
         # subclass
         pass
 
-    def before_marshal(self):
+    def before_marshal(self) -> None:
         """Entry point for pre-serialization processing, for example to finalize part
         naming if necessary.
 
@@ -68,11 +72,11 @@ class Part:
         return self._blob or b""
 
     @property
-    def content_type(self):
+    def content_type(self) -> str:
         """Content type of this part."""
         return self._content_type
 
-    def drop_rel(self, rId: str):
+    def drop_rel(self, rId: str) -> None:
         """Remove the relationship identified by `rId` if its reference count is less
         than 2.
 
@@ -82,10 +86,12 @@ class Part:
             del self.rels[rId]
 
     @classmethod
-    def load(cls, partname: PackURI, content_type: str, blob: bytes, package: Package):
+    def load(cls, partname: PackURI, content_type: str, blob: bytes, package: Package) -> Self:
         return cls(partname, content_type, blob, package)
 
-    def load_rel(self, reltype: str, target: Part | str, rId: str, is_external: bool = False):
+    def load_rel(
+        self, reltype: str, target: Part | str, rId: str, is_external: bool = False
+    ) -> _Relationship:
         """Return newly added |_Relationship| instance of `reltype`.
 
         The new relationship relates the `target` part to this part with key `rId`.
@@ -97,21 +103,22 @@ class Part:
         return self.rels.add_relationship(reltype, target, rId, is_external)
 
     @property
-    def package(self):
+    def package(self) -> Package | None:
         """|OpcPackage| instance this part belongs to."""
         return self._package
 
     @property
-    def partname(self):
+    def partname(self) -> PackURI:
         """|PackURI| instance holding partname of this part, e.g.
         '/ppt/slides/slide1.xml'."""
         return self._partname
 
     @partname.setter
-    def partname(self, partname: str):
+    def partname(self, partname: str) -> None:
         if not isinstance(partname, PackURI):
-            tmpl = "partname must be instance of PackURI, got '%s'"
-            raise TypeError(tmpl % type(partname).__name__)
+            raise TypeError(
+                f"partname must be instance of PackURI, got '{type(partname).__name__}'"
+            )
         self._partname = partname
 
     def part_related_by(self, reltype: str) -> Part:
@@ -136,7 +143,7 @@ class Part:
             return rel.rId
 
     @property
-    def related_parts(self):
+    def related_parts(self) -> dict[str, Part]:
         """Dictionary mapping related parts by rId, so child objects can resolve
         explicit relationships present in the part XML, e.g. sldIdLst to a specific
         |Slide| instance."""
@@ -175,10 +182,13 @@ class PartFactory:
     the part, which is by default ``opc.package.Part``.
     """
 
-    part_class_selector: Callable[[str, str], Type[Part] | None] | None
-    part_type_for: dict[str, Type[Part]] = {}
+    part_class_selector: Callable[[str, str], type[Part] | None] | None
+    part_type_for: dict[str, type[Part]] = {}
     default_part_type = Part
 
+    # -- a factory: "constructing" a PartFactory returns a Part. mypy requires __new__ to
+    # -- return the class's own type unless it returns Any, and pyright reports a
+    # -- `type: ignore` here as unnecessary, so the return type is Any --
     def __new__(
         cls,
         partname: PackURI,
@@ -186,8 +196,8 @@ class PartFactory:
         reltype: str,
         blob: bytes,
         package: Package,
-    ):
-        PartClass: Type[Part] | None = None
+    ) -> Any:  # noqa: ANN401
+        PartClass: type[Part] | None = None
         if cls.part_class_selector is not None:
             part_class_selector = cls_method_fn(cls, "part_class_selector")
             PartClass = part_class_selector(content_type, reltype)
@@ -196,7 +206,7 @@ class PartFactory:
         return PartClass.load(partname, content_type, blob, package)
 
     @classmethod
-    def _part_cls_for(cls, content_type: str):
+    def _part_cls_for(cls, content_type: str) -> type[Part]:
         """Return the custom part class registered for `content_type`, or the default
         part class if no custom class is registered for `content_type`."""
         if content_type in cls.part_type_for:
@@ -213,26 +223,26 @@ class XmlPart(Part):
 
     def __init__(
         self, partname: PackURI, content_type: str, element: BaseOxmlElement, package: Package
-    ):
-        super(XmlPart, self).__init__(partname, content_type, package=package)
+    ) -> None:
+        super().__init__(partname, content_type, package=package)
         self._element = element
 
     @property
-    def blob(self):
+    def blob(self) -> bytes:
         return serialize_part_xml(self._element)
 
     @property
-    def element(self):
+    def element(self) -> BaseOxmlElement:
         """The root XML element of this XML part."""
         return self._element
 
     @classmethod
-    def load(cls, partname: PackURI, content_type: str, blob: bytes, package: Package):
+    def load(cls, partname: PackURI, content_type: str, blob: bytes, package: Package) -> Self:
         element = parse_xml(blob)
         return cls(partname, content_type, element, package)
 
     @property
-    def part(self):
+    def part(self) -> Self:
         """Part of the parent protocol, "children" of the document will not know the
         part that contains them so must ask their parent object.
 

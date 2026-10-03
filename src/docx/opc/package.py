@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import IO, TYPE_CHECKING, Iterator, cast
+from collections.abc import Callable, Iterator
+from typing import IO, TYPE_CHECKING, cast
 
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from docx.opc.packuri import PACKAGE_URI, PackURI
@@ -18,7 +19,9 @@ if TYPE_CHECKING:
 
     from docx.opc.coreprops import CoreProperties
     from docx.opc.part import Part
+    from docx.opc.pkgreader import PackageReader as _PackageReader
     from docx.opc.rel import _Relationship  # pyright: ignore[reportPrivateUsage]
+    from docx.package import Package
 
 
 class OpcPackage:
@@ -28,7 +31,7 @@ class OpcPackage:
     to a package file or file-like object containing one.
     """
 
-    def after_unmarshal(self):
+    def after_unmarshal(self) -> None:
         """Entry point for any post-unmarshaling processing.
 
         May be overridden by subclasses without forwarding call to super.
@@ -60,17 +63,15 @@ class OpcPackage:
                     continue
                 visited.append(part)
                 new_source = part
-                for rel in walk_rels(new_source, visited):
-                    yield rel
+                yield from walk_rels(new_source, visited)
 
-        for rel in walk_rels(self):
-            yield rel
+        yield from walk_rels(self)
 
     def iter_parts(self) -> Iterator[Part]:
         """Generate exactly one reference to each of the parts in the package by
         performing a depth-first traversal of the rels graph."""
 
-        def walk_parts(source, visited=[]):
+        def walk_parts(source: OpcPackage | Part, visited: list[Part]) -> Iterator[Part]:
             for rel in source.rels.values():
                 if rel.is_external:
                     continue
@@ -80,13 +81,13 @@ class OpcPackage:
                 visited.append(part)
                 yield part
                 new_source = part
-                for part in walk_parts(new_source, visited):
-                    yield part
+                yield from walk_parts(new_source, visited)
 
-        for part in walk_parts(self):
-            yield part
+        yield from walk_parts(self, [])
 
-    def load_rel(self, reltype: str, target: Part | str, rId: str, is_external: bool = False):
+    def load_rel(
+        self, reltype: str, target: Part | str, rId: str, is_external: bool = False
+    ) -> _Relationship:
         """Return newly added |_Relationship| instance of `reltype` between this part
         and `target` with key `rId`.
 
@@ -97,7 +98,7 @@ class OpcPackage:
         return self.rels.add_relationship(reltype, target, rId, is_external)
 
     @property
-    def main_document_part(self):
+    def main_document_part(self) -> Part:
         """Return a reference to the main document part for this package.
 
         Examples include a document part for a WordprocessingML package, a presentation
@@ -119,6 +120,8 @@ class OpcPackage:
             candidate_partname = template % n
             if candidate_partname not in partnames:
                 return PackURI(candidate_partname)
+        # -- unreachable: len(partnames) + 1 candidates cannot all be taken --
+        raise AssertionError("no unused partname found")  # pragma: no cover
 
     @classmethod
     def open(cls, pkg_file: str | IO[bytes]) -> Self:
@@ -141,7 +144,7 @@ class OpcPackage:
         """Return a list containing a reference to each of the parts in this package."""
         return list(self.iter_parts())
 
-    def relate_to(self, part: Part, reltype: str):
+    def relate_to(self, part: Part, reltype: str) -> str:
         """Return rId key of new or existing relationship to `part`.
 
         If a relationship of `reltype` to `part` already exists, its rId is returned. Otherwise a
@@ -151,12 +154,12 @@ class OpcPackage:
         return rel.rId
 
     @lazyproperty
-    def rels(self):
+    def rels(self) -> Relationships:
         """Return a reference to the |Relationships| instance holding the collection of
         relationships for this package."""
         return Relationships(PACKAGE_URI.baseURI)
 
-    def save(self, pkg_file: str | IO[bytes]):
+    def save(self, pkg_file: str | IO[bytes]) -> None:
         """Save this package to `pkg_file`.
 
         `pkg_file` can be either a file-path or a file-like object.
@@ -183,7 +186,11 @@ class Unmarshaller:
     """Hosts static methods for unmarshalling a package from a |PackageReader|."""
 
     @staticmethod
-    def unmarshal(pkg_reader, package, part_factory):
+    def unmarshal(
+        pkg_reader: _PackageReader,
+        package: OpcPackage,
+        part_factory: Callable[[PackURI, str, str, bytes, Package], Part],
+    ) -> None:
         """Construct graph of parts and realized relationships based on the contents of
         `pkg_reader`, delegating construction of each part to `part_factory`.
 
@@ -196,24 +203,35 @@ class Unmarshaller:
         package.after_unmarshal()
 
     @staticmethod
-    def _unmarshal_parts(pkg_reader, package, part_factory):
+    def _unmarshal_parts(
+        pkg_reader: _PackageReader,
+        package: OpcPackage,
+        part_factory: Callable[[PackURI, str, str, bytes, Package], Part],
+    ) -> dict[PackURI, Part]:
         """Return a dictionary of |Part| instances unmarshalled from `pkg_reader`, keyed
         by partname.
 
         Side-effect is that each part in `pkg_reader` is constructed using
         `part_factory`.
         """
-        parts = {}
+        parts: dict[PackURI, Part] = {}
         for partname, content_type, reltype, blob in pkg_reader.iter_sparts():
-            parts[partname] = part_factory(partname, content_type, reltype, blob, package)
+            # -- the package passed here is always the docx Package being opened --
+            parts[partname] = part_factory(
+                partname, content_type, reltype, blob, cast("Package", package)
+            )
         return parts
 
     @staticmethod
-    def _unmarshal_relationships(pkg_reader, package, parts):
+    def _unmarshal_relationships(
+        pkg_reader: _PackageReader, package: OpcPackage, parts: dict[PackURI, Part]
+    ) -> None:
         """Add a relationship to the source object corresponding to each of the
         relationships in `pkg_reader` with its target_part set to the actual target part
         in `parts`."""
         for source_uri, srel in pkg_reader.iter_srels():
-            source = package if source_uri == "/" else parts[source_uri]
-            target = srel.target_ref if srel.is_external else parts[srel.target_partname]
+            source: OpcPackage | Part = package if source_uri == "/" else parts[source_uri]
+            target: Part | str = (
+                srel.target_ref if srel.is_external else parts[srel.target_partname]
+            )
             source.load_rel(srel.reltype, target, srel.rId, srel.is_external)

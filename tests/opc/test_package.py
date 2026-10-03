@@ -375,7 +375,7 @@ class DescribeUnmarshaller:
             parts["partname%d" % num] = part
             pkg.attach_mock(part, name)
         # exercise ---------------------
-        Unmarshaller._unmarshal_relationships(pkg_reader, pkg, parts)
+        Unmarshaller._unmarshal_relationships(pkg_reader, pkg, parts)  # pyright: ignore[reportUnknownArgumentType]
         # verify -----------------------
         expected_pkg_calls = [
             call.load_rel(reltype, parts["partname1"], "rId1", False),

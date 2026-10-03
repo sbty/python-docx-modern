@@ -36,13 +36,17 @@ class DocumentPart(StoryPart):
 
     def add_footer_part(self) -> tuple[FooterPart, str]:
         """Return (footer_part, rId) pair for newly-created footer part."""
-        footer_part = FooterPart.new(self.package)
+        package = self.package
+        assert package is not None
+        footer_part = FooterPart.new(package)
         rId = self.relate_to(footer_part, RT.FOOTER)
         return footer_part, rId
 
     def add_header_part(self) -> tuple[HeaderPart, str]:
         """Return (header_part, rId) pair for newly-created header part."""
-        header_part = HeaderPart.new(self.package)
+        package = self.package
+        assert package is not None
+        header_part = HeaderPart.new(package)
         rId = self.relate_to(header_part, RT.HEADER)
         return header_part, rId
 
@@ -55,10 +59,9 @@ class DocumentPart(StoryPart):
     def core_properties(self) -> CoreProperties:
         """A |CoreProperties| object providing read/write access to the core properties
         of this document."""
-        # -- `Part.package` is untyped for mypy (docx.opc is not migrated yet); a typed local
-        # -- avoids a cast that pyright, which infers the type, reports as unnecessary --
-        core_properties: CoreProperties = self.package.core_properties
-        return core_properties
+        package = self.package
+        assert package is not None
+        return package.core_properties
 
     @property
     def document(self) -> Document:
@@ -120,7 +123,9 @@ class DocumentPart(StoryPart):
     def save(self, path_or_stream: str | IO[bytes]) -> None:
         """Save this document to `path_or_stream`, which can be either a path to a
         filesystem location (a string) or a file-like object."""
-        self.package.save(path_or_stream)
+        package = self.package
+        assert package is not None
+        package.save(path_or_stream)
 
     @property
     def settings(self) -> Settings:
@@ -158,7 +163,9 @@ class DocumentPart(StoryPart):
         try:
             return cast(SettingsPart, self.part_related_by(RT.SETTINGS))
         except KeyError:
-            settings_part = SettingsPart.default(self.package)
+            package = self.package
+            assert package is not None
+            settings_part = SettingsPart.default(package)
             self.relate_to(settings_part, RT.SETTINGS)
             return settings_part
 

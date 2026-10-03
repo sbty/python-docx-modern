@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.drawing import CT_Drawing
 from docx.shared import Parented
@@ -10,6 +10,7 @@ from docx.shared import Parented
 if TYPE_CHECKING:
     import docx.types as t
     from docx.image.image import Image
+    from docx.parts.image import ImagePart
 
 
 class Drawing(Parented):
@@ -55,5 +56,6 @@ class Drawing(Parented):
             raise ValueError("drawing does not contain a picture")
         rId = picture_rIds[0]
         doc_part = self.part
-        image_part = doc_part.related_parts[rId]
+        # -- a picture's blip relationship always targets an image part --
+        image_part = cast("ImagePart", doc_part.related_parts[rId])
         return image_part.image

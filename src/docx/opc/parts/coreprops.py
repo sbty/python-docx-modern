@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from docx.opc.constants import CONTENT_TYPE as CT
 from docx.opc.coreprops import CoreProperties
@@ -13,6 +13,7 @@ from docx.oxml.coreprops import CT_CoreProperties
 
 if TYPE_CHECKING:
     from docx.opc.package import OpcPackage
+    from docx.package import Package
 
 
 class CorePropertiesPart(XmlPart):
@@ -23,7 +24,7 @@ class CorePropertiesPart(XmlPart):
     """
 
     @classmethod
-    def default(cls, package: OpcPackage):
+    def default(cls, package: OpcPackage) -> CorePropertiesPart:
         """Return a new |CorePropertiesPart| object initialized with default values for
         its base properties."""
         core_properties_part = cls._new(package)
@@ -35,14 +36,16 @@ class CorePropertiesPart(XmlPart):
         return core_properties_part
 
     @property
-    def core_properties(self):
+    def core_properties(self) -> CoreProperties:
         """A |CoreProperties| object providing read/write access to the core properties
         contained in this core properties part."""
-        return CoreProperties(self.element)
+        return CoreProperties(cast(CT_CoreProperties, self.element))
 
     @classmethod
     def _new(cls, package: OpcPackage) -> CorePropertiesPart:
         partname = PackURI("/docProps/core.xml")
         content_type = CT.OPC_CORE_PROPERTIES
         coreProperties = CT_CoreProperties.new()
-        return CorePropertiesPart(partname, content_type, coreProperties, package)
+        # -- XmlPart is annotated with docx's Package, but this OPC-level part only needs
+        # -- the OpcPackage it belongs to --
+        return CorePropertiesPart(partname, content_type, coreProperties, cast("Package", package))

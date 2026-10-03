@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, cast
+from typing import TYPE_CHECKING, cast
 
 from docx.opc.oxml import CT_Relationships
 
@@ -10,22 +10,22 @@ if TYPE_CHECKING:
     from docx.opc.part import Part
 
 
-class Relationships(Dict[str, "_Relationship"]):
+class Relationships(dict[str, "_Relationship"]):
     """Collection object for |_Relationship| instances, having list semantics."""
 
-    def __init__(self, baseURI: str):
-        super(Relationships, self).__init__()
+    def __init__(self, baseURI: str) -> None:
+        super().__init__()
         self._baseURI = baseURI
-        self._target_parts_by_rId: dict[str, Any] = {}
+        self._target_parts_by_rId: dict[str, Part] = {}
 
     def add_relationship(
         self, reltype: str, target: Part | str, rId: str, is_external: bool = False
-    ) -> "_Relationship":
+    ) -> _Relationship:
         """Return a newly added |_Relationship| instance."""
         rel = _Relationship(rId, reltype, target, self._baseURI, is_external)
         self[rId] = rel
         if not is_external:
-            self._target_parts_by_rId[rId] = target
+            self._target_parts_by_rId[rId] = cast("Part", target)
         return rel
 
     def get_or_add(self, reltype: str, target_part: Part) -> _Relationship:
@@ -53,13 +53,13 @@ class Relationships(Dict[str, "_Relationship"]):
         return rel.target_part
 
     @property
-    def related_parts(self):
+    def related_parts(self) -> dict[str, Part]:
         """Dict mapping rIds to target parts for all the internal relationships in the
         collection."""
         return self._target_parts_by_rId
 
     @property
-    def xml(self) -> str:
+    def xml(self) -> bytes:
         """Serialize this relationship collection into XML suitable for storage as a
         .rels file in an OPC package."""
         rels_elm = CT_Relationships.new()
@@ -73,7 +73,9 @@ class Relationships(Dict[str, "_Relationship"]):
         """Return relationship of matching `reltype`, `target`, and `is_external` from
         collection, or None if not found."""
 
-        def matches(rel: _Relationship, reltype: str, target: Part | str, is_external: bool):
+        def matches(
+            rel: _Relationship, reltype: str, target: Part | str, is_external: bool
+        ) -> bool:
             if rel.reltype != reltype:
                 return False
             if rel.is_external != is_external:
@@ -86,7 +88,7 @@ class Relationships(Dict[str, "_Relationship"]):
                 return rel
         return None
 
-    def _get_rel_of_type(self, reltype: str):
+    def _get_rel_of_type(self, reltype: str) -> _Relationship:
         """Return single relationship of type `reltype` from the collection.
 
         Raises |KeyError| if no matching relationship is found. Raises |ValueError| if
@@ -94,21 +96,21 @@ class Relationships(Dict[str, "_Relationship"]):
         """
         matching = [rel for rel in self.values() if rel.reltype == reltype]
         if len(matching) == 0:
-            tmpl = "no relationship of type '%s' in collection"
-            raise KeyError(tmpl % reltype)
+            raise KeyError(f"no relationship of type '{reltype}' in collection")
         if len(matching) > 1:
-            tmpl = "multiple relationships of type '%s' in collection"
-            raise ValueError(tmpl % reltype)
+            raise ValueError(f"multiple relationships of type '{reltype}' in collection")
         return matching[0]
 
     @property
-    def _next_rId(self) -> str:  # pyright: ignore[reportReturnType]
+    def _next_rId(self) -> str:
         """Next available rId in collection, starting from 'rId1' and making use of any
         gaps in numbering, e.g. 'rId2' for rIds ['rId1', 'rId3']."""
         for n in range(1, len(self) + 2):
-            rId_candidate = "rId%d" % n  # like 'rId19'
+            rId_candidate = f"rId{n}"  # like 'rId19'
             if rId_candidate not in self:
                 return rId_candidate
+        # -- unreachable: len(self) + 1 candidates cannot all be taken by len(self) rIds --
+        raise AssertionError("no unused rId found")  # pragma: no cover
 
 
 class _Relationship:
@@ -116,8 +118,8 @@ class _Relationship:
 
     def __init__(
         self, rId: str, reltype: str, target: Part | str, baseURI: str, external: bool = False
-    ):
-        super(_Relationship, self).__init__()
+    ) -> None:
+        super().__init__()
         self._rId = rId
         self._reltype = reltype
         self._target = target

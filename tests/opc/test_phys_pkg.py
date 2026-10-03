@@ -86,7 +86,7 @@ class DescribeZipPkgReader:
     def it_can_be_closed(self, ZipFile_):
         # mockery ----------------------
         zipf = ZipFile_.return_value
-        zip_pkg_reader = _ZipPkgReader(None)
+        zip_pkg_reader = _ZipPkgReader(None)  # pyright: ignore[reportArgumentType]
         # exercise ---------------------
         zip_pkg_reader.close()
         # verify -----------------------
@@ -138,7 +138,7 @@ class DescribeZipPkgWriter:
     def it_can_be_closed(self, ZipFile_):
         # mockery ----------------------
         zipf = ZipFile_.return_value
-        zip_pkg_writer = _ZipPkgWriter(None)
+        zip_pkg_writer = _ZipPkgWriter(None)  # pyright: ignore[reportArgumentType]
         # exercise ---------------------
         zip_pkg_writer.close()
         # verify -----------------------
