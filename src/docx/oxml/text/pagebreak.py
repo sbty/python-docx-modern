@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.xmlchemy import BaseOxmlElement
 from docx.shared import lazyproperty
 
 if TYPE_CHECKING:
+    from lxml.etree import _Element  # pyright: ignore[reportPrivateUsage]
+
     from docx.oxml.text.hyperlink import CT_Hyperlink
     from docx.oxml.text.paragraph import CT_P
 
@@ -123,19 +125,21 @@ class CT_LastRenderedPageBreak(BaseOxmlElement):
         Raises `IndexError` when this page-break has a `w:p` grandparent, so only call
         when `._is_in_hyperlink` is True.
         """
-        return lrpb.xpath("./parent::w:r/parent::w:hyperlink")[0]
+        return cast("CT_Hyperlink", lrpb.xpath("./parent::w:r/parent::w:hyperlink")[0])
 
     @property
     def _enclosing_p(self) -> CT_P:
         """The `w:p` element parent or grandparent of this `w:lastRenderedPageBreak`."""
-        return self.xpath("./ancestor::w:p[1]")[0]
+        return cast("CT_P", self.xpath("./ancestor::w:p[1]")[0])
 
     def _first_lrpb_in_p(self, p: CT_P) -> CT_LastRenderedPageBreak:
         """The first `w:lastRenderedPageBreak` element in `p`.
 
         Raises `ValueError` if there are no rendered page-breaks in `p`.
         """
-        lrpbs = p.xpath("./w:r/w:lastRenderedPageBreak | ./w:hyperlink/w:r/w:lastRenderedPageBreak")
+        lrpbs: list[CT_LastRenderedPageBreak] = p.xpath(
+            "./w:r/w:lastRenderedPageBreak | ./w:hyperlink/w:r/w:lastRenderedPageBreak"
+        )
         if not lrpbs:
             raise ValueError("no rendered page-breaks in paragraph element")
         return lrpbs[0]
@@ -164,7 +168,7 @@ class CT_LastRenderedPageBreak(BaseOxmlElement):
             p.remove(e)
 
         # -- remove the whole hyperlink, it belongs to the preceding-fragment-p --
-        hyperlink.getparent().remove(hyperlink)
+        cast("_Element", hyperlink.getparent()).remove(hyperlink)
 
         # -- that's it, return the remaining fragment of `w:p` clone --
         return p
@@ -228,7 +232,7 @@ class CT_LastRenderedPageBreak(BaseOxmlElement):
             p.remove(e)
 
         # -- remove this page-break from inside the hyperlink --
-        lrpb.getparent().remove(lrpb)
+        cast("_Element", lrpb.getparent()).remove(lrpb)
 
         # -- that's it, the entire hyperlink goes into the preceding fragment so
         # -- the hyperlink is not "split".

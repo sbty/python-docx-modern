@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from docx.oxml.xmlchemy import BaseOxmlElement, ZeroOrOne
 
@@ -116,7 +117,7 @@ class CT_Settings(BaseOxmlElement):
         "w:decimalSymbol",
         "w:listSeparator",
     )
-    evenAndOddHeaders: CT_OnOff | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    evenAndOddHeaders: CT_OnOff | None = ZeroOrOne(  # type: ignore[assignment]
         "w:evenAndOddHeaders", successors=_tag_seq[48:]
     )
     del _tag_seq
@@ -130,7 +131,7 @@ class CT_Settings(BaseOxmlElement):
         return evenAndOddHeaders.val
 
     @evenAndOddHeaders_val.setter
-    def evenAndOddHeaders_val(self, value: bool | None):
+    def evenAndOddHeaders_val(self, value: bool | None) -> None:
         if value is None or value is False:
             self._remove_evenAndOddHeaders()
             return

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.section import CT_SectPr
 from docx.oxml.xmlchemy import BaseOxmlElement, ZeroOrMore, ZeroOrOne
@@ -15,10 +16,10 @@ if TYPE_CHECKING:
 class CT_Document(BaseOxmlElement):
     """``<w:document>`` element, the root element of a document.xml file."""
 
-    body: CT_Body = ZeroOrOne("w:body")  # pyright: ignore[reportAssignmentType]
+    body: CT_Body = ZeroOrOne("w:body")  # type: ignore[assignment]
 
     @property
-    def sectPr_lst(self) -> List[CT_SectPr]:
+    def sectPr_lst(self) -> list[CT_SectPr]:
         """All `w:sectPr` elements directly accessible from document element.
 
         Note this does not include a `sectPr` child in a paragraphs wrapped in
@@ -29,7 +30,7 @@ class CT_Document(BaseOxmlElement):
         `w:body/w:sectPr`, all preceding are `w:p/w:pPr/w:sectPr`.
         """
         xpath = "./w:body/w:p/w:pPr/w:sectPr | ./w:body/w:sectPr"
-        return self.xpath(xpath)
+        return cast("list[CT_SectPr]", self.xpath(xpath))
 
 
 class CT_Body(BaseOxmlElement):
@@ -37,14 +38,14 @@ class CT_Body(BaseOxmlElement):
 
     add_p: Callable[[], CT_P]
     get_or_add_sectPr: Callable[[], CT_SectPr]
-    p_lst: List[CT_P]
-    tbl_lst: List[CT_Tbl]
+    p_lst: list[CT_P]
+    tbl_lst: list[CT_Tbl]
 
     _insert_tbl: Callable[[CT_Tbl], CT_Tbl]
 
     p = ZeroOrMore("w:p", successors=("w:sectPr",))
     tbl = ZeroOrMore("w:tbl", successors=("w:sectPr",))
-    sectPr: CT_SectPr | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    sectPr: CT_SectPr | None = ZeroOrOne(  # type: ignore[assignment]
         "w:sectPr", successors=()
     )
 
@@ -79,10 +80,10 @@ class CT_Body(BaseOxmlElement):
             self.remove(content_elm)
 
     @property
-    def inner_content_elements(self) -> List[CT_P | CT_Tbl]:
+    def inner_content_elements(self) -> list[CT_P | CT_Tbl]:
         """Generate all `w:p` and `w:tbl` elements in this document-body.
 
         Elements appear in document order. Elements shaded by nesting in a `w:ins` or
         other "wrapper" element will not be included.
         """
-        return self.xpath("./w:p | ./w:tbl")
+        return cast("list[CT_P | CT_Tbl]", self.xpath("./w:p | ./w:tbl"))

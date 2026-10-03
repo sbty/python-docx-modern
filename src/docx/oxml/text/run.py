@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Iterator, List, cast
+from collections.abc import Callable, Iterator
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.drawing import CT_Drawing
 from docx.oxml.ns import qn
@@ -30,7 +31,7 @@ class CT_R(BaseOxmlElement):
     _add_drawing: Callable[[], CT_Drawing]
     _add_t: Callable[..., CT_Text]
 
-    rPr: CT_RPr | None = ZeroOrOne("w:rPr")  # pyright: ignore[reportAssignmentType]
+    rPr: CT_RPr | None = ZeroOrOne("w:rPr")  # type: ignore[assignment]
     br = ZeroOrMore("w:br")
     cr = ZeroOrMore("w:cr")
     drawing = ZeroOrMore("w:drawing")
@@ -60,7 +61,7 @@ class CT_R(BaseOxmlElement):
             self.remove(e)
 
     @property
-    def inner_content_items(self) -> List[str | CT_Drawing | CT_LastRenderedPageBreak]:
+    def inner_content_items(self) -> list[str | CT_Drawing | CT_LastRenderedPageBreak]:
         """Text of run, possibly punctuated by `w:lastRenderedPageBreak` elements."""
         from docx.oxml.text.pagebreak import CT_LastRenderedPageBreak
 
@@ -77,7 +78,7 @@ class CT_R(BaseOxmlElement):
                 " | w:t"
                 " | w:tab"
             ):
-                if isinstance(e, (CT_Drawing, CT_LastRenderedPageBreak)):
+                if isinstance(e, CT_Drawing | CT_LastRenderedPageBreak):
                     yield from accum.pop()
                     yield e
                 else:
@@ -102,9 +103,9 @@ class CT_R(BaseOxmlElement):
         self.addprevious(OxmlElement("w:commentRangeStart", attrs={qn("w:id"): str(comment_id)}))
 
     @property
-    def lastRenderedPageBreaks(self) -> List[CT_LastRenderedPageBreak]:
+    def lastRenderedPageBreaks(self) -> list[CT_LastRenderedPageBreak]:
         """All `w:lastRenderedPageBreaks` descendants of this run."""
-        return self.xpath("./w:lastRenderedPageBreak")
+        return cast("list[CT_LastRenderedPageBreak]", self.xpath("./w:lastRenderedPageBreak"))
 
     @property
     def style(self) -> str | None:
@@ -118,7 +119,7 @@ class CT_R(BaseOxmlElement):
         return rPr.style
 
     @style.setter
-    def style(self, style: str | None):
+    def style(self, style: str | None) -> None:
         """Set character style of this `w:r` element to `style`.
 
         If `style` is None, remove the style element.
@@ -138,9 +139,11 @@ class CT_R(BaseOxmlElement):
         )
 
     @text.setter
-    def text(self, text: str):  # pyright: ignore[reportIncompatibleMethodOverride]
+    def text(self, value: object) -> None:
+        # -- an override must accept whatever lxml's `_Element.text` setter accepts; only a
+        # -- str actually works, anything else fails in the appender as it always has --
         self.clear_content()
-        _RunContentAppender.append_to_run_from_text(self, text)
+        _RunContentAppender.append_to_run_from_text(self, cast(str, value))
 
     def _insert_rPr(self, rPr: CT_RPr) -> CT_RPr:
         self.insert(0, rPr)
@@ -171,10 +174,10 @@ class CT_R(BaseOxmlElement):
 class CT_Br(BaseOxmlElement):
     """`<w:br>` element, indicating a line, page, or column break in a run."""
 
-    type: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    type: str | None = OptionalAttribute(  # type: ignore[assignment]
         "w:type", ST_BrType, default="textWrapping"
     )
-    clear: str | None = OptionalAttribute("w:clear", ST_BrClear)  # pyright: ignore
+    clear: str | None = OptionalAttribute("w:clear", ST_BrClear)  # type: ignore[assignment]
 
     def __str__(self) -> str:
         """Text equivalent of this element. Actual value depends on break type.
@@ -268,23 +271,23 @@ class _RunContentAppender:
     appended.
     """
 
-    def __init__(self, r: CT_R):
+    def __init__(self, r: CT_R) -> None:
         self._r = r
-        self._bfr: List[str] = []
+        self._bfr: list[str] = []
 
     @classmethod
-    def append_to_run_from_text(cls, r: CT_R, text: str):
+    def append_to_run_from_text(cls, r: CT_R, text: str) -> None:
         """Append inner-content elements for `text` to `r` element."""
         appender = cls(r)
         appender.add_text(text)
 
-    def add_text(self, text: str):
+    def add_text(self, text: str) -> None:
         """Append inner-content elements for `text` to the `w:r` element."""
         for char in text:
             self.add_char(char)
         self.flush()
 
-    def add_char(self, char: str):
+    def add_char(self, char: str) -> None:
         """Process next character of input through finite state maching (FSM).
 
         There are two possible states, buffer pending and not pending, but those are
@@ -300,7 +303,7 @@ class _RunContentAppender:
         else:
             self._bfr.append(char)
 
-    def flush(self):
+    def flush(self) -> None:
         text = "".join(self._bfr)
         if text:
             self._r.add_t(text)

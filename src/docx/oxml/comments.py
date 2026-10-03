@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import datetime as dt
-from typing import TYPE_CHECKING, Callable, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.ns import nsdecls
 from docx.oxml.parser import parse_xml
@@ -97,12 +98,12 @@ class CT_Comment(BaseOxmlElement):
     """
 
     # -- attributes on `w:comment` --
-    id: int = RequiredAttribute("w:id", ST_DecimalNumber)  # pyright: ignore[reportAssignmentType]
-    author: str = RequiredAttribute("w:author", ST_String)  # pyright: ignore[reportAssignmentType]
-    initials: str | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    id: int = RequiredAttribute("w:id", ST_DecimalNumber)  # type: ignore[assignment]
+    author: str = RequiredAttribute("w:author", ST_String)  # type: ignore[assignment]
+    initials: str | None = OptionalAttribute(  # type: ignore[assignment]
         "w:initials", ST_String
     )
-    date: dt.datetime | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+    date: dt.datetime | None = OptionalAttribute(  # type: ignore[assignment]
         "w:date", ST_DateTime
     )
 
@@ -121,4 +122,4 @@ class CT_Comment(BaseOxmlElement):
     @property
     def inner_content_elements(self) -> list[CT_P | CT_Tbl]:
         """Generate all `w:p` and `w:tbl` elements in this comment."""
-        return self.xpath("./w:p | ./w:tbl")
+        return cast("list[CT_P | CT_Tbl]", self.xpath("./w:p | ./w:tbl"))

@@ -4,7 +4,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, List, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.parser import OxmlElement
 from docx.oxml.xmlchemy import BaseOxmlElement, ZeroOrMore, ZeroOrOne
@@ -23,10 +24,10 @@ class CT_P(BaseOxmlElement):
 
     add_r: Callable[[], CT_R]
     get_or_add_pPr: Callable[[], CT_PPr]
-    hyperlink_lst: List[CT_Hyperlink]
-    r_lst: List[CT_R]
+    hyperlink_lst: list[CT_Hyperlink]
+    r_lst: list[CT_R]
 
-    pPr: CT_PPr | None = ZeroOrOne("w:pPr")  # pyright: ignore[reportAssignmentType]
+    pPr: CT_PPr | None = ZeroOrOne("w:pPr")  # type: ignore[assignment]
     hyperlink = ZeroOrMore("w:hyperlink")
     r = ZeroOrMore("w:r")
 
@@ -55,22 +56,23 @@ class CT_P(BaseOxmlElement):
             self.remove(child)
 
     @property
-    def inner_content_elements(self) -> List[CT_R | CT_Hyperlink]:
+    def inner_content_elements(self) -> list[CT_R | CT_Hyperlink]:
         """Run and hyperlink children of the `w:p` element, in document order."""
-        return self.xpath("./w:r | ./w:hyperlink")
+        return cast("list[CT_R | CT_Hyperlink]", self.xpath("./w:r | ./w:hyperlink"))
 
     @property
-    def lastRenderedPageBreaks(self) -> List[CT_LastRenderedPageBreak]:
+    def lastRenderedPageBreaks(self) -> list[CT_LastRenderedPageBreak]:
         """All `w:lastRenderedPageBreak` descendants of this paragraph.
 
         Rendered page-breaks commonly occur in a run but can also occur in a run inside
         a hyperlink. This returns both.
         """
-        return self.xpath(
-            "./w:r/w:lastRenderedPageBreak | ./w:hyperlink/w:r/w:lastRenderedPageBreak"
+        return cast(
+            "list[CT_LastRenderedPageBreak]",
+            self.xpath("./w:r/w:lastRenderedPageBreak | ./w:hyperlink/w:r/w:lastRenderedPageBreak"),
         )
 
-    def set_sectPr(self, sectPr: CT_SectPr):
+    def set_sectPr(self, sectPr: CT_SectPr) -> None:
         """Unconditionally replace or add `sectPr` as grandchild in correct sequence."""
         pPr = self.get_or_add_pPr()
         pPr._remove_sectPr()
@@ -88,18 +90,25 @@ class CT_P(BaseOxmlElement):
         return pPr.style
 
     @style.setter
-    def style(self, style: str | None):
+    def style(self, style: str | None) -> None:
         pPr = self.get_or_add_pPr()
         pPr.style = style
 
     @property
-    def text(self) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def text(self) -> str:
         """The textual content of this paragraph.
 
         Inner-content child elements like `w:r` and `w:hyperlink` are translated to
         their text equivalent.
         """
         return "".join(e.text for e in self.xpath("w:r | w:hyperlink"))
+
+    @text.setter
+    def text(self, value: object) -> None:
+        # -- read-only; the setter exists only because lxml's `_Element.text` is writable.
+        # -- An override must stay writable and accept whatever the base accepts, so raise
+        # -- exactly what a property without a setter raises --
+        raise AttributeError(f"property 'text' of '{type(self).__name__}' object has no setter")
 
     def _insert_pPr(self, pPr: CT_PPr) -> CT_PPr:
         self.insert(0, pPr)

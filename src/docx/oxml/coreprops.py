@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import datetime as dt
 import re
-from typing import TYPE_CHECKING, Any, Callable, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, cast
 
 from docx.oxml.ns import nsdecls, qn
 from docx.oxml.parser import parse_xml
@@ -35,14 +36,14 @@ class CT_CoreProperties(BaseOxmlElement):
     lastModifiedBy = ZeroOrOne("cp:lastModifiedBy", successors=())
     lastPrinted = ZeroOrOne("cp:lastPrinted", successors=())
     modified = ZeroOrOne("dcterms:modified", successors=())
-    revision: etree_Element | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+    revision: etree_Element | None = ZeroOrOne(  # type: ignore[assignment]
         "cp:revision", successors=()
     )
     subject = ZeroOrOne("dc:subject", successors=())
     title = ZeroOrOne("dc:title", successors=())
     version = ZeroOrOne("cp:version", successors=())
 
-    _coreProperties_tmpl = "<cp:coreProperties %s/>\n" % nsdecls("cp", "dc", "dcterms")
+    _coreProperties_tmpl = f"<cp:coreProperties {nsdecls('cp', 'dc', 'dcterms')}/>\n"
 
     @classmethod
     def new(cls) -> CT_CoreProperties:
@@ -57,7 +58,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("creator")
 
     @author_text.setter
-    def author_text(self, value: str):
+    def author_text(self, value: str) -> None:
         self._set_element_text("creator", value)
 
     @property
@@ -65,7 +66,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("category")
 
     @category_text.setter
-    def category_text(self, value: str):
+    def category_text(self, value: str) -> None:
         self._set_element_text("category", value)
 
     @property
@@ -73,7 +74,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("description")
 
     @comments_text.setter
-    def comments_text(self, value: str):
+    def comments_text(self, value: str) -> None:
         self._set_element_text("description", value)
 
     @property
@@ -81,7 +82,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("contentStatus")
 
     @contentStatus_text.setter
-    def contentStatus_text(self, value: str):
+    def contentStatus_text(self, value: str) -> None:
         self._set_element_text("contentStatus", value)
 
     @property
@@ -89,7 +90,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._datetime_of_element("created")
 
     @created_datetime.setter
-    def created_datetime(self, value: dt.datetime):
+    def created_datetime(self, value: dt.datetime) -> None:
         self._set_element_datetime("created", value)
 
     @property
@@ -97,7 +98,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("identifier")
 
     @identifier_text.setter
-    def identifier_text(self, value: str):
+    def identifier_text(self, value: str) -> None:
         self._set_element_text("identifier", value)
 
     @property
@@ -105,7 +106,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("keywords")
 
     @keywords_text.setter
-    def keywords_text(self, value: str):
+    def keywords_text(self, value: str) -> None:
         self._set_element_text("keywords", value)
 
     @property
@@ -113,7 +114,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("language")
 
     @language_text.setter
-    def language_text(self, value: str):
+    def language_text(self, value: str) -> None:
         self._set_element_text("language", value)
 
     @property
@@ -121,7 +122,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("lastModifiedBy")
 
     @lastModifiedBy_text.setter
-    def lastModifiedBy_text(self, value: str):
+    def lastModifiedBy_text(self, value: str) -> None:
         self._set_element_text("lastModifiedBy", value)
 
     @property
@@ -129,7 +130,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._datetime_of_element("lastPrinted")
 
     @lastPrinted_datetime.setter
-    def lastPrinted_datetime(self, value: dt.datetime):
+    def lastPrinted_datetime(self, value: dt.datetime) -> None:
         self._set_element_datetime("lastPrinted", value)
 
     @property
@@ -137,16 +138,16 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._datetime_of_element("modified")
 
     @modified_datetime.setter
-    def modified_datetime(self, value: dt.datetime):
+    def modified_datetime(self, value: dt.datetime) -> None:
         self._set_element_datetime("modified", value)
 
     @property
     def revision_number(self) -> int:
         """Integer value of revision property."""
-        revision = self.revision
-        if revision is None:
+        revision_elm = self.revision
+        if revision_elm is None:
             return 0
-        revision_str = str(revision.text)
+        revision_str = str(revision_elm.text)
         try:
             revision = int(revision_str)
         except ValueError:
@@ -158,7 +159,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return revision
 
     @revision_number.setter
-    def revision_number(self, value: int):
+    def revision_number(self, value: int) -> None:
         """Set revision property to string value of integer `value`."""
         if not isinstance(value, int) or value < 1:  # pyright: ignore[reportUnnecessaryIsInstance]
             tmpl = "revision property requires positive int, got '%s'"
@@ -171,7 +172,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("subject")
 
     @subject_text.setter
-    def subject_text(self, value: str):
+    def subject_text(self, value: str) -> None:
         self._set_element_text("subject", value)
 
     @property
@@ -179,7 +180,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("title")
 
     @title_text.setter
-    def title_text(self, value: str):
+    def title_text(self, value: str) -> None:
         self._set_element_text("title", value)
 
     @property
@@ -187,7 +188,7 @@ class CT_CoreProperties(BaseOxmlElement):
         return self._text_of_element("version")
 
     @version_text.setter
-    def version_text(self, value: str):
+    def version_text(self, value: str) -> None:
         self._set_element_text("version", value)
 
     def _datetime_of_element(self, property_name: str) -> dt.datetime | None:
@@ -203,9 +204,9 @@ class CT_CoreProperties(BaseOxmlElement):
 
     def _get_or_add(self, prop_name: str) -> BaseOxmlElement:
         """Return element returned by "get_or_add_" method for `prop_name`."""
-        get_or_add_method_name = "get_or_add_%s" % prop_name
+        get_or_add_method_name = f"get_or_add_{prop_name}"
         get_or_add_method = getattr(self, get_or_add_method_name)
-        element = get_or_add_method()
+        element: BaseOxmlElement = get_or_add_method()
         return element
 
     @classmethod
@@ -216,7 +217,7 @@ class CT_CoreProperties(BaseOxmlElement):
         """
         match = cls._offset_pattern.match(offset_str)
         if match is None:
-            raise ValueError("'%s' is not a valid offset string" % offset_str)
+            raise ValueError(f"'{offset_str}' is not a valid offset string")
         sign, hours_str, minutes_str = match.groups()
         sign_factor = -1 if sign == "+" else 1
         hours = int(hours_str) * sign_factor
@@ -274,7 +275,7 @@ class CT_CoreProperties(BaseOxmlElement):
             element.set(qn("xsi:type"), "dcterms:W3CDTF")
             del self.attrib[qn("xsi:foo")]
 
-    def _set_element_text(self, prop_name: str, value: Any) -> None:
+    def _set_element_text(self, prop_name: str, value: object) -> None:
         """Set string value of `name` property to `value`."""
         if not isinstance(value, str):
             value = str(value)
@@ -290,7 +291,7 @@ class CT_CoreProperties(BaseOxmlElement):
 
         The empty string if the element is not present or contains no text.
         """
-        element = getattr(self, property_name)
+        element: etree_Element | None = getattr(self, property_name)
         if element is None:
             return ""
         if element.text is None:
