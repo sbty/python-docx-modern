@@ -127,3 +127,16 @@ class DescribeInlineShape:
             "wp:inline/(wp:extent{cx=444,cy=888},a:graphic/a:graphicData/pic:pic/pic:spPr/"
             "a:xfrm/a:ext{cx=444,cy=888})"
         )
+
+    @pytest.mark.parametrize("uri", [nsmap["c"], nsmap["dgm"]])
+    def and_it_can_change_the_display_dimensions_of_a_non_picture_shape(self, uri: str):
+        # -- a chart or SmartArt `a:graphicData` has no `pic:pic`, so only `wp:extent` changes --
+        cxml = f"wp:inline/(wp:extent{{cx=333,cy=666}},a:graphic/a:graphicData{{uri={uri}}})"
+        inline_shape = InlineShape(cast(CT_Inline, element(cxml)))
+
+        inline_shape.width = Emu(444)
+        inline_shape.height = Emu(888)
+
+        assert inline_shape._inline.xml == xml(
+            f"wp:inline/(wp:extent{{cx=444,cy=888}},a:graphic/a:graphicData{{uri={uri}}})"
+        )

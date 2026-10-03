@@ -64,7 +64,7 @@ class CT_GraphicalObjectData(BaseOxmlElement):
 
     _insert_pic: Callable[[CT_Picture], CT_Picture]
 
-    pic: CT_Picture = ZeroOrOne("pic:pic")  # type: ignore[assignment]
+    pic: CT_Picture | None = ZeroOrOne("pic:pic")  # type: ignore[assignment]
     uri: str = RequiredAttribute("uri", XsdToken)  # type: ignore[assignment]
 
 

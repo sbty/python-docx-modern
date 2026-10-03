@@ -6,7 +6,7 @@ A shape is a visual object that appears on the drawing layer of a document.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from docx.enum.shape import WD_INLINE_SHAPE
 from docx.oxml.ns import nsmap
@@ -14,7 +14,7 @@ from docx.shared import Parented
 
 if TYPE_CHECKING:
     from docx.oxml.document import CT_Body
-    from docx.oxml.shape import CT_Inline
+    from docx.oxml.shape import CT_Inline, CT_Picture
     from docx.parts.story import StoryPart
     from docx.shared import Length
 
@@ -69,7 +69,10 @@ class InlineShape:
     @height.setter
     def height(self, cy: Length) -> None:
         self._inline.extent.cy = cy
-        self._inline.graphic.graphicData.pic.spPr.cy = cy
+        pic = self._inline.graphic.graphicData.pic
+        # -- only a picture has a `pic:pic` element, whose shape size mirrors the extent --
+        if pic is not None:
+            pic.spPr.cy = cy
 
     @property
     def type(self) -> WD_INLINE_SHAPE:
@@ -81,7 +84,8 @@ class InlineShape:
         graphicData = self._inline.graphic.graphicData
         uri = graphicData.uri
         if uri == nsmap["pic"]:
-            blip = graphicData.pic.blipFill.blip
+            # -- a picture's `a:graphicData` always contains a `pic:pic` element --
+            blip = cast("CT_Picture", graphicData.pic).blipFill.blip
             if blip.link is not None:
                 return WD_INLINE_SHAPE.LINKED_PICTURE
             return WD_INLINE_SHAPE.PICTURE
@@ -102,4 +106,7 @@ class InlineShape:
     @width.setter
     def width(self, cx: Length) -> None:
         self._inline.extent.cx = cx
-        self._inline.graphic.graphicData.pic.spPr.cx = cx
+        pic = self._inline.graphic.graphicData.pic
+        # -- only a picture has a `pic:pic` element, whose shape size mirrors the extent --
+        if pic is not None:
+            pic.spPr.cx = cx

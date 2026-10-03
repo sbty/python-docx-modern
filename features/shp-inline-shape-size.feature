@@ -11,3 +11,13 @@ Feature: Query and change dimensions of inline shape
     Given an inline shape of known dimensions
      When I change the dimensions of the inline shape
      Then the dimensions of the inline shape match the new values
+
+  Scenario Outline: Change dimensions of a non-picture inline shape
+    Given an inline shape known to be <shape of type>
+     When I change the dimensions of the inline shape
+     Then the dimensions of the inline shape match the new values
+
+   Examples: Inline shapes having no picture
+     | shape of type       |
+     | a smart art diagram |
+     | a chart             |

@@ -32,6 +32,8 @@ Unreleased (python-docx-modern fork)
 - Fix #1541 `DocumentPart.numbering_part` raising NotImplementedError for a document
   without a numbering part; an empty numbering part is now added
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
+- Fix setting `InlineShape.width` or `.height` on a chart or SmartArt shape raising
+  AttributeError after changing only the extent; the extent now changes cleanly
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged
 - Typing: `DocumentPart.get_style()` / `StoryPart.get_style()` are annotated
