@@ -126,11 +126,12 @@ select = [
 [tool.ruff.lint.per-file-ignores]
 # -- Ratchet: modules not yet modernized are exempt from the stricter rules. The negated glob
 # -- names what IS migrated: `docx.comments`, `docx.document`, `docx.section`, `docx.shared`,
-# -- `docx.table` and the `docx.image`, `docx.opc`, `docx.parts`, `docx.styles` and
-# -- `docx.text` packages. Add a module or package to its brace-list and to the mypy override
-# -- below. Only the UP codes that unmigrated code currently violates are listed, so
-# -- UP015/UP018/UP032/UP034 stay enforced everywhere.
-"!src/docx/{comments,document,image/*,opc/**/*,parts/*,section,shared,styles/*,table,text/*}.py" = [
+# -- `docx.table`, the `docx.image`, `docx.opc`, `docx.parts`, `docx.styles` and `docx.text`
+# -- packages, and the `docx.oxml` package module and its drawing, exceptions, ns, parser,
+# -- shared, simpletypes and xmlchemy modules. Add a module or package to its brace-list and
+# -- to the mypy override below. Only the UP codes that unmigrated code currently violates
+# -- are listed, so UP015/UP018/UP032/UP034 stay enforced everywhere.
+"!src/docx/{comments,document,image/*,opc/**/*,oxml/__init__,oxml/drawing,oxml/exceptions,oxml/ns,oxml/parser,oxml/shared,oxml/simpletypes,oxml/xmlchemy,parts/*,section,shared,styles/*,table,text/*}.py" = [
     "ANN",
     "B",
     "UP006",
@@ -187,6 +188,14 @@ module = [
     "docx.document",
     "docx.image.*",
     "docx.opc.*",
+    "docx.oxml",
+    "docx.oxml.drawing",
+    "docx.oxml.exceptions",
+    "docx.oxml.ns",
+    "docx.oxml.parser",
+    "docx.oxml.shared",
+    "docx.oxml.simpletypes",
+    "docx.oxml.xmlchemy",
     "docx.parts.*",
     "docx.section",
     "docx.shared",
