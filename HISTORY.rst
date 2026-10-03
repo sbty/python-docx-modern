@@ -34,6 +34,8 @@ Unreleased (python-docx-modern fork)
 - Fix `ImagePart.default_cy` computing height from horizontal instead of vertical DPI
 - Fix setting `InlineShape.width` or `.height` on a chart or SmartArt shape raising
   AttributeError after changing only the extent; the extent now changes cleanly
+- Fix `InlineShape.type` raising AttributeError for a picture without an `a:blip`
+  element; such a picture is reported as `WD_INLINE_SHAPE.PICTURE`
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged
 - Typing: `DocumentPart.get_style()` / `StoryPart.get_style()` are annotated

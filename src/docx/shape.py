@@ -86,7 +86,8 @@ class InlineShape:
         if uri == nsmap["pic"]:
             # -- a picture's `a:graphicData` always contains a `pic:pic` element --
             blip = cast("CT_Picture", graphicData.pic).blipFill.blip
-            if blip.link is not None:
+            # -- a picture without an `a:blip` has no image data, so it is not linked --
+            if blip is not None and blip.link is not None:
                 return WD_INLINE_SHAPE.LINKED_PICTURE
             return WD_INLINE_SHAPE.PICTURE
         if uri == nsmap["c"]:

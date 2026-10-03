@@ -46,7 +46,9 @@ class CT_Blip(BaseOxmlElement):
 class CT_BlipFillProperties(BaseOxmlElement):
     """``<pic:blipFill>`` element, specifies picture properties."""
 
-    blip: CT_Blip = ZeroOrOne(  # type: ignore[assignment]
+    get_or_add_blip: Callable[[], CT_Blip]
+
+    blip: CT_Blip | None = ZeroOrOne(  # type: ignore[assignment]
         "a:blip", successors=("a:srcRect", "a:tile", "a:stretch")
     )
 
@@ -152,7 +154,7 @@ class CT_Picture(BaseOxmlElement):
         pic = cast(CT_Picture, parse_xml(cls._pic_xml()))
         pic.nvPicPr.cNvPr.id = pic_id
         pic.nvPicPr.cNvPr.name = filename
-        pic.blipFill.blip.embed = rId
+        pic.blipFill.get_or_add_blip().embed = rId
         pic.spPr.cx = cx
         pic.spPr.cy = cy
         return pic

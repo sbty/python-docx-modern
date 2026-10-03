@@ -82,6 +82,8 @@ class DescribeInlineShape:
                 "/pic:pic/pic:blipFill/a:blip{r:embed=rId1,r:link=rId2}",
                 WD_INLINE_SHAPE.LINKED_PICTURE,
             ),
+            # -- picture without an `a:blip` (no image data) --
+            (nsmap["pic"], "/pic:pic/pic:blipFill", WD_INLINE_SHAPE.PICTURE),
             # -- chart --
             (nsmap["c"], "", WD_INLINE_SHAPE.CHART),
             # -- SmartArt --
