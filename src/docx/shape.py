@@ -5,6 +5,7 @@ A shape is a visual object that appears on the drawing layer of a document.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
 from docx.enum.shape import WD_INLINE_SHAPE
@@ -21,39 +22,40 @@ if TYPE_CHECKING:
 class InlineShapes(Parented):
     """Sequence of |InlineShape| instances, supporting len(), iteration, and indexed access."""
 
-    def __init__(self, body_elm: CT_Body, parent: StoryPart):
-        super(InlineShapes, self).__init__(parent)
+    def __init__(self, body_elm: CT_Body, parent: StoryPart) -> None:
+        super().__init__(parent)
         self._body = body_elm
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> InlineShape:
         """Provide indexed access, e.g. 'inline_shapes[idx]'."""
         try:
             inline = self._inline_lst[idx]
         except IndexError:
-            msg = "inline shape index [%d] out of range" % idx
-            raise IndexError(msg)
+            msg = f"inline shape index [{idx:d}] out of range"
+            raise IndexError(msg) from None
 
         return InlineShape(inline)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[InlineShape]:
         return (InlineShape(inline) for inline in self._inline_lst)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._inline_lst)
 
     @property
-    def _inline_lst(self):
+    def _inline_lst(self) -> list[CT_Inline]:
         body = self._body
         xpath = "//w:p/w:r/w:drawing/wp:inline"
-        return body.xpath(xpath)
+        inlines: list[CT_Inline] = body.xpath(xpath)
+        return inlines
 
 
 class InlineShape:
     """Proxy for an ``<wp:inline>`` element, representing the container for an inline
     graphical object."""
 
-    def __init__(self, inline: CT_Inline):
-        super(InlineShape, self).__init__()
+    def __init__(self, inline: CT_Inline) -> None:
+        super().__init__()
         self._inline = inline
 
     @property
@@ -65,12 +67,12 @@ class InlineShape:
         return self._inline.extent.cy
 
     @height.setter
-    def height(self, cy: Length):
+    def height(self, cy: Length) -> None:
         self._inline.extent.cy = cy
         self._inline.graphic.graphicData.pic.spPr.cy = cy
 
     @property
-    def type(self):
+    def type(self) -> WD_INLINE_SHAPE:
         """The type of this inline shape as a member of
         ``docx.enum.shape.WD_INLINE_SHAPE``, e.g. ``LINKED_PICTURE``.
 
@@ -90,7 +92,7 @@ class InlineShape:
         return WD_INLINE_SHAPE.NOT_IMPLEMENTED
 
     @property
-    def width(self):
+    def width(self) -> Length:
         """Read/write.
 
         The display width of this inline shape as an |Emu| instance.
@@ -98,6 +100,6 @@ class InlineShape:
         return self._inline.extent.cx
 
     @width.setter
-    def width(self, cx: Length):
+    def width(self, cx: Length) -> None:
         self._inline.extent.cx = cx
         self._inline.graphic.graphicData.pic.spPr.cx = cx
