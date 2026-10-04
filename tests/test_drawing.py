@@ -24,8 +24,31 @@ class DescribeDrawing:
     @pytest.mark.parametrize(
         ("cxml", "expected_value"),
         [
-            ("w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic", True),
-            ("w:drawing/wp:anchor/a:graphic/a:graphicData/pic:pic", True),
+            # -- an embedded picture, inline or floating --
+            (
+                "w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill"
+                "/a:blip{r:embed=rId1}",
+                True,
+            ),
+            (
+                "w:drawing/wp:anchor/a:graphic/a:graphicData/pic:pic/pic:blipFill"
+                "/a:blip{r:embed=rId1}",
+                True,
+            ),
+            # -- a picture both linked and embedded still has its image in the package --
+            (
+                "w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill"
+                "/a:blip{r:embed=rId1,r:link=rId2}",
+                True,
+            ),
+            # -- a linked-only picture has no image in the package --
+            (
+                "w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill"
+                "/a:blip{r:link=rId2}",
+                False,
+            ),
+            # -- a picture without an `a:blip` has no image data at all --
+            ("w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill", False),
             ("w:drawing/wp:inline/a:graphic/a:graphicData/a:grpSp", False),
             ("w:drawing/wp:anchor/a:graphic/a:graphicData/a:chart", False),
         ],

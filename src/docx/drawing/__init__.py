@@ -35,11 +35,13 @@ class Drawing(Parented):
         Note this does not distinguish between inline and floating images. The presence of either
         one will cause this value to be `True`.
         """
+        # -- only an embedded image (`a:blip/@r:embed`) is in the package; a linked-only
+        # -- picture or one without an `a:blip` has none, so `.image` would raise --
         xpath_expr = (
             # -- an inline picture --
-            "./wp:inline/a:graphic/a:graphicData/pic:pic"
+            "./wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip[@r:embed]"
             # -- a floating picture --
-            " | ./wp:anchor/a:graphic/a:graphicData/pic:pic"
+            " | ./wp:anchor/a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip[@r:embed]"
         )
         # -- xpath() will return a list, empty if there are no matches --
         return bool(self._drawing.xpath(xpath_expr))

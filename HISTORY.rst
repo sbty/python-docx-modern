@@ -36,6 +36,9 @@ Unreleased (python-docx-modern fork)
   AttributeError after changing only the extent; the extent now changes cleanly
 - Fix `InlineShape.type` raising AttributeError for a picture without an `a:blip`
   element; such a picture is reported as `WD_INLINE_SHAPE.PICTURE`
+- Fix `Drawing.has_picture` returning True for a linked-only picture (or one without
+  an `a:blip`), for which `Drawing.image` raises; it is now True only when the picture
+  is embedded, as documented
 - `Hyperlink` and `RenderedPageBreak` now derive from `StoryChild` (like `Run` and
   `Paragraph`) rather than `Parented`; behavior is unchanged
 - Typing: `DocumentPart.get_style()` / `StoryPart.get_style()` are annotated
