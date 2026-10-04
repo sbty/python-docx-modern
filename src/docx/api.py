@@ -31,7 +31,7 @@ def Document(docx: str | IO[bytes] | None = None) -> DocumentObject:
     return document_part.document
 
 
-def _default_docx_path():
+def _default_docx_path() -> str:
     """Return the path to the built-in default .docx package."""
     _thisdir = os.path.split(__file__)[0]
     return os.path.join(_thisdir, "templates", "default.docx")
