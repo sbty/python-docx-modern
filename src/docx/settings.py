@@ -18,7 +18,7 @@ class Settings(ElementProxy):
     Accessed using the :attr:`.Document.settings` property.
     """
 
-    def __init__(self, element: BaseOxmlElement, parent: t.ProvidesXmlPart | None = None):
+    def __init__(self, element: BaseOxmlElement, parent: t.ProvidesXmlPart | None = None) -> None:
         super().__init__(element, parent)
         self._settings = cast("CT_Settings", element)
 
@@ -31,5 +31,5 @@ class Settings(ElementProxy):
         return self._settings.evenAndOddHeaders_val
 
     @odd_and_even_pages_header_footer.setter
-    def odd_and_even_pages_header_footer(self, value: bool):
+    def odd_and_even_pages_header_footer(self, value: bool) -> None:
         self._settings.evenAndOddHeaders_val = value
