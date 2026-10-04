@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
-
-from typing_extensions import TypeAlias
+from typing import TYPE_CHECKING, TypeAlias, cast
 
 from docx.enum.dml import MSO_COLOR_TYPE
 from docx.oxml.simpletypes import ST_HexColorAuto
@@ -23,9 +21,11 @@ RPrParent: TypeAlias = "CT_R | CT_Style"
 class ColorFormat(ElementProxy):
     """Provides access to color settings like RGB color, theme color, and luminance adjustments."""
 
-    def __init__(self, rPr_parent: RPrParent):
-        super(ColorFormat, self).__init__(rPr_parent)
+    def __init__(self, rPr_parent: RPrParent) -> None:
+        super().__init__(rPr_parent)
         self._element = rPr_parent
+        # -- the `w:rPr` parent, typed more narrowly than the inherited `._element` --
+        self._rPr_parent = rPr_parent
 
     @property
     def rgb(self) -> RGBColor | None:
@@ -50,10 +50,10 @@ class ColorFormat(ElementProxy):
         return cast(RGBColor, color.val)
 
     @rgb.setter
-    def rgb(self, value: RGBColor | None):
+    def rgb(self, value: RGBColor | None) -> None:
         if value is None and self._color is None:
             return
-        rPr = self._element.get_or_add_rPr()
+        rPr = self._rPr_parent.get_or_add_rPr()
         rPr._remove_color()  # pyright: ignore[reportPrivateUsage]
         if value is not None:
             rPr.get_or_add_color().val = value
@@ -77,12 +77,13 @@ class ColorFormat(ElementProxy):
         return color.themeColor
 
     @theme_color.setter
-    def theme_color(self, value: MSO_THEME_COLOR | None):
+    def theme_color(self, value: MSO_THEME_COLOR | None) -> None:
         if value is None:
-            if self._color is not None and self._element.rPr is not None:
-                self._element.rPr._remove_color()  # pyright: ignore[reportPrivateUsage]
+            rPr = self._rPr_parent.rPr
+            if self._color is not None and rPr is not None:
+                rPr._remove_color()  # pyright: ignore[reportPrivateUsage]
             return
-        self._element.get_or_add_rPr().get_or_add_color().themeColor = value
+        self._rPr_parent.get_or_add_rPr().get_or_add_color().themeColor = value
 
     @property
     def type(self) -> MSO_COLOR_TYPE | None:
@@ -107,7 +108,7 @@ class ColorFormat(ElementProxy):
 
         Helper to factor out repetitive element access.
         """
-        rPr = self._element.rPr
+        rPr = self._rPr_parent.rPr
         if rPr is None:
             return None
         return rPr.color
