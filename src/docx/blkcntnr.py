@@ -8,9 +8,8 @@ specialized ones like structured document tags.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator
-
-from typing_extensions import TypeAlias
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, TypeAlias
 
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
@@ -38,8 +37,8 @@ class BlockItemContainer(StoryChild):
     paragraph or table.
     """
 
-    def __init__(self, element: BlockItemElement, parent: t.ProvidesStoryPart):
-        super(BlockItemContainer, self).__init__(parent)
+    def __init__(self, element: BlockItemElement, parent: t.ProvidesStoryPart) -> None:
+        super().__init__(parent)
         self._element = element
 
     def add_paragraph(self, text: str = "", style: str | ParagraphStyle | None = None) -> Paragraph:
@@ -96,6 +95,6 @@ class BlockItemContainer(StoryChild):
 
         return [Table(tbl, self) for tbl in self._element.tbl_lst]
 
-    def _add_paragraph(self):
+    def _add_paragraph(self) -> Paragraph:
         """Return paragraph newly added to the end of the content in this container."""
         return Paragraph(self._element.add_p(), self)
