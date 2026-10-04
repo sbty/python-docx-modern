@@ -117,34 +117,26 @@ select = [
     "UP032",    # -- Use f-string instead of `.format()` call --
     "UP034",    # -- Avoid extraneous parentheses --
     "W",        # -- pycodestyle warnings --
-    # -- stricter rules, enforced only on modules already migrated (see per-file-ignores) --
+    # -- stricter rules, enforced only on the `docx` package (see per-file-ignores) --
     "ANN",      # -- flake8-annotations --
     "B",        # -- flake8-bugbear --
     "UP",       # -- pyupgrade --
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# -- Ratchet: modules not yet modernized are exempt from the stricter rules. The negated glob
-# -- names what IS migrated: `docx.api`, `docx.blkcntnr`, `docx.comments`, `docx.document`,
-# -- `docx.exceptions`, `docx.package`, `docx.section`, `docx.settings`, `docx.shape`,
-# -- `docx.shared`, `docx.table`, `docx.types` and the `docx.dml`, `docx.drawing`,
-# -- `docx.enum`, `docx.image`, `docx.opc`, `docx.oxml`, `docx.parts`, `docx.styles` and
-# -- `docx.text` packages. Add a module or package to its brace-list and to the mypy override
-# -- below. Only the UP codes that unmigrated code currently violates are listed, so
-# -- UP015/UP018/UP032/UP034 stay enforced everywhere.
-"!src/docx/{api,blkcntnr,comments,dml/*,document,drawing/*,enum/*,exceptions,image/*,opc/**/*,oxml/**/*,package,parts/*,section,settings,shape,shared,styles/*,table,text/*,types}.py" = [
+# -- The stricter rules are enforced on the whole `docx` package (`src/docx`); tests,
+# -- acceptance-test steps and other support code are exempt. Only the UP codes that
+# -- exempt code currently violates are listed, so every other UP code stays enforced
+# -- everywhere.
+"!src/docx/**/*.py" = [
     "ANN",
     "B",
     "UP006",
     "UP008",
     "UP009",
     "UP012",
-    "UP024",
-    "UP028",
     "UP031",
     "UP035",
-    "UP037",
-    "UP038",
 ]
 
 [tool.ruff.lint.isort]
@@ -175,37 +167,3 @@ strict = true
 warn_unused_configs = true
 mypy_path = "src:typings"
 files = ["src/docx"]
-
-[[tool.mypy.overrides]]
-# -- Ratchet: errors are ignored in modules not yet modernized. List each migrated module or
-# -- package (as "pkg.*") in the override below; keep it in sync with the ruff
-# -- per-file-ignores above.
-module = ["docx.*"]
-ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = [
-    "docx.api",
-    "docx.blkcntnr",
-    "docx.comments",
-    "docx.dml.*",
-    "docx.document",
-    "docx.drawing.*",
-    "docx.enum.*",
-    "docx.exceptions",
-    "docx.image.*",
-    "docx.opc.*",
-    "docx.oxml.*",
-    "docx.package",
-    "docx.parts.*",
-    "docx.section",
-    "docx.settings",
-    "docx.shape",
-    "docx.shared",
-    "docx.styles.*",
-    "docx.table",
-    "docx.text.*",
-    "docx.types",
-]
-ignore_errors = false
-

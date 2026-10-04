@@ -1,4 +1,4 @@
-"""Static type-checking gate for modules migrated to `mypy --strict`."""
+"""Static type-checking gate: the `docx` package passes `mypy --strict`."""
 
 from __future__ import annotations
 
@@ -16,10 +16,10 @@ PROJECT_ROOT = Path(__file__).parent.parent
 class DescribeTypeChecking:
     """Runs mypy with the project configuration in `pyproject.toml`.
 
-    The set of modules held to `strict` is the ratchet list under `[tool.mypy.overrides]`.
+    `strict` applies to the whole `docx` package (`files` under `[tool.mypy]`).
     """
 
-    def it_passes_mypy_strict_on_migrated_modules(self):
+    def it_passes_mypy_strict(self):
         result = subprocess.run(
             [sys.executable, "-m", "mypy", "--no-incremental"],
             cwd=PROJECT_ROOT,

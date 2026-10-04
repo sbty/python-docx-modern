@@ -45,8 +45,8 @@ Unreleased (python-docx-modern fork)
   `BaseStyle | None` (they return None when no default style exists) and
   `StylesPart.default()` takes a `docx.package.Package`; runtime behavior is unchanged
 - Require Python 3.10+; lower lxml minimum to 4.9.0
-- Build with hatchling instead of setuptools; add mypy strict checking for
-  migrated modules
+- Build with hatchling instead of setuptools; type the whole `docx` package and check
+  it with mypy in strict mode
 
 1.2.0 (2025-06-16)
 ++++++++++++++++++
