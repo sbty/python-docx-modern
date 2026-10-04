@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import enum
 import textwrap
-from typing import TYPE_CHECKING, Any, Dict, Type, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -19,13 +19,13 @@ class BaseEnum(int, enum.Enum):
     corresponding member in the MS API enum of the same name.
     """
 
-    def __new__(cls, ms_api_value: int, docstr: str):
+    def __new__(cls, ms_api_value: int, docstr: str) -> Self:
         self = int.__new__(cls, ms_api_value)
         self._value_ = ms_api_value
         self.__doc__ = docstr.strip()
         return self
 
-    def __str__(self):
+    def __str__(self) -> str:
         """The symbolic name and string value of this member, e.g. 'MIDDLE (3)'."""
         return f"{self.name} ({self.value})"
 
@@ -39,14 +39,14 @@ class BaseXmlEnum(int, enum.Enum):
 
     xml_value: str | None
 
-    def __new__(cls, ms_api_value: int, xml_value: str | None, docstr: str):
+    def __new__(cls, ms_api_value: int, xml_value: str | None, docstr: str) -> Self:
         self = int.__new__(cls, ms_api_value)
         self._value_ = ms_api_value
         self.xml_value = xml_value
         self.__doc__ = docstr.strip()
         return self
 
-    def __str__(self):
+    def __str__(self) -> str:
         """The symbolic name and string value of this member, e.g. 'MIDDLE (3)'."""
         return f"{self.name} ({self.value})"
 
@@ -66,15 +66,17 @@ class BaseXmlEnum(int, enum.Enum):
         return member
 
     @classmethod
-    def to_xml(cls: Type[_T], value: int | _T | None) -> str | None:
+    def to_xml(cls: type[_T], value: int | _T | None) -> str | None:
         """XML value of this enum member, generally an XML attribute value."""
         # -- presence of multi-arg `__new__()` method fools type-checker, but getting a
         # -- member by its value using EnumCls(val) works as usual.
-        member = cls(value)
-        xml_value = member.xml_value
-        if not xml_value:
+        member: _T = cast(Any, cls)(value)
+        # -- a local named `xml_value` makes mypy treat the enum's `xml_value` attribute as
+        # -- final and reject its assignment in `__new__()`, so this local is named differently --
+        member_xml_value = member.xml_value
+        if not member_xml_value:
             raise ValueError(f"{cls.__name__}.{member.name} has no XML representation")
-        return xml_value
+        return member_xml_value
 
 
 class DocsPageFormatter:
@@ -84,12 +86,12 @@ class DocsPageFormatter:
     passed to the constructor. An immutable one-shot service object.
     """
 
-    def __init__(self, clsname: str, clsdict: Dict[str, Any]):
+    def __init__(self, clsname: str, clsdict: dict[str, Any]) -> None:
         self._clsname = clsname
         self._clsdict = clsdict
 
     @property
-    def page_str(self):
+    def page_str(self) -> str:
         """The RestructuredText documentation page for the enumeration.
 
         This is the only API member for the class.
@@ -104,7 +106,7 @@ class DocsPageFormatter:
         return tmpl % components
 
     @property
-    def _intro_text(self):
+    def _intro_text(self) -> str:
         """Docstring of the enumeration, formatted for documentation page."""
         try:
             cls_docstring = self._clsdict["__doc__"]
@@ -116,7 +118,7 @@ class DocsPageFormatter:
 
         return textwrap.dedent(cls_docstring).strip()
 
-    def _member_def(self, member: BaseEnum | BaseXmlEnum):
+    def _member_def(self, member: BaseEnum | BaseXmlEnum) -> str:
         """Return an individual member definition formatted as an RST glossary entry,
         wrapped to fit within 78 columns."""
         assert member.__doc__ is not None
@@ -127,10 +129,10 @@ class DocsPageFormatter:
             initial_indent=" " * 4,
             subsequent_indent=" " * 4,
         )
-        return "%s\n%s\n" % (member.name, member_docstring)
+        return f"{member.name}\n{member_docstring}\n"
 
     @property
-    def _member_defs(self):
+    def _member_defs(self) -> str:
         """A single string containing the aggregated member definitions section of the
         documentation page."""
         members = self._clsdict["__members__"]
@@ -138,13 +140,14 @@ class DocsPageFormatter:
         return "\n".join(member_defs)
 
     @property
-    def _ms_name(self):
+    def _ms_name(self) -> str:
         """The Microsoft API name for this enumeration."""
-        return self._clsdict["__ms_name__"]
+        ms_name: str = self._clsdict["__ms_name__"]
+        return ms_name
 
     @property
-    def _page_title(self):
+    def _page_title(self) -> str:
         """The title for the documentation page, formatted as code (surrounded in
         double-backtics) and underlined with '=' characters."""
         title_underscore = "=" * (len(self._clsname) + 4)
-        return "``%s``\n%s" % (self._clsname, title_underscore)
+        return f"``{self._clsname}``\n{title_underscore}"

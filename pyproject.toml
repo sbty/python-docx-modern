@@ -128,11 +128,11 @@ select = [
 # -- names what IS migrated: `docx.api`, `docx.blkcntnr`, `docx.comments`, `docx.document`,
 # -- `docx.exceptions`, `docx.package`, `docx.section`, `docx.settings`, `docx.shape`,
 # -- `docx.shared`, `docx.table`, `docx.types` and the `docx.dml`, `docx.drawing`,
-# -- `docx.image`, `docx.opc`, `docx.oxml`, `docx.parts`, `docx.styles` and `docx.text`
-# -- packages. Add a module or package to its brace-list and to the mypy override below.
-# -- Only the UP codes that unmigrated code currently violates are listed, so
+# -- `docx.enum`, `docx.image`, `docx.opc`, `docx.oxml`, `docx.parts`, `docx.styles` and
+# -- `docx.text` packages. Add a module or package to its brace-list and to the mypy override
+# -- below. Only the UP codes that unmigrated code currently violates are listed, so
 # -- UP015/UP018/UP032/UP034 stay enforced everywhere.
-"!src/docx/{api,blkcntnr,comments,dml/*,document,drawing/*,exceptions,image/*,opc/**/*,oxml/**/*,package,parts/*,section,settings,shape,shared,styles/*,table,text/*,types}.py" = [
+"!src/docx/{api,blkcntnr,comments,dml/*,document,drawing/*,enum/*,exceptions,image/*,opc/**/*,oxml/**/*,package,parts/*,section,settings,shape,shared,styles/*,table,text/*,types}.py" = [
     "ANN",
     "B",
     "UP006",
@@ -191,6 +191,7 @@ module = [
     "docx.dml.*",
     "docx.document",
     "docx.drawing.*",
+    "docx.enum.*",
     "docx.exceptions",
     "docx.image.*",
     "docx.opc.*",
