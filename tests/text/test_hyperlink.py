@@ -5,7 +5,7 @@ from typing import cast
 import pytest
 
 from docx import types as t
-from docx.opc.rel import _Relationship  # pyright: ignore[reportPrivateUsage]
+from docx.opc.rel import _Relationship
 from docx.oxml.text.hyperlink import CT_Hyperlink
 from docx.parts.story import StoryPart
 from docx.text.hyperlink import Hyperlink

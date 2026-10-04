@@ -25,7 +25,8 @@ class PhysPkgReader:
                 raise PackageNotFoundError(f"Package not found at '{pkg_file}'")
         else:  # assume it's a stream and pass it to Zip reader to sort out
             reader_cls = _ZipPkgReader
-        return super().__new__(reader_cls)
+        # -- `object.__new__()` directly: the instance is of a subclass, not of `cls` --
+        return object.__new__(reader_cls)
 
     # -- the interface each reader class implements; instances are always a subclass --
 
@@ -51,7 +52,8 @@ class PhysPkgWriter:
     """Factory for physical package writer objects."""
 
     def __new__(cls, pkg_file: str | IO[bytes]) -> PhysPkgWriter:
-        return super().__new__(_ZipPkgWriter)
+        # -- `object.__new__()` directly: the instance is of a subclass, not of `cls` --
+        return object.__new__(_ZipPkgWriter)
 
     # -- the interface each writer class implements; instances are always a subclass --
 
@@ -68,7 +70,9 @@ class _DirPkgReader(PhysPkgReader):
     """Implements |PhysPkgReader| interface for an OPC package extracted into a
     directory."""
 
-    def __init__(self, path: str) -> None:
+    # -- the factory `PhysPkgReader.__new__()` accepts a path or a stream but only hands a
+    # -- directory path to this class, so this `__init__()` is narrower than `__new__()` --
+    def __init__(self, path: str) -> None:  # pyright: ignore[reportInconsistentConstructor]
         """`path` is the path to a directory containing an expanded package."""
         super().__init__()
         self._path = os.path.abspath(path)

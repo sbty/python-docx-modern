@@ -61,8 +61,11 @@ pythonVersion = "3.10"
 reportImportCycles = false
 reportUnnecessaryCast = true
 reportUnnecessaryTypeIgnoreComment = true
+# -- the `docx` package is checked in strict mode (gated by tests/test_typing.py); other code,
+# -- mainly tests built on mocks and placeholder arguments, in standard mode --
+strict = ["src/docx"]
 stubPath = "./typings"
-typeCheckingMode = "strict"
+typeCheckingMode = "standard"
 verboseOutput = true
 venvPath = "."
 venv = ".venv"
