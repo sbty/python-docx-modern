@@ -337,12 +337,12 @@ class DescribePartFactory:
 
 class DescribeXmlPart:
     def it_can_be_constructed_by_PartFactory(
-        self, partname_, content_type_, blob_, package_, element_, parse_xml_, __init_
+        self, partname_, content_type_, blob_, package_, element_, parse_xml_, XmlPart__init_
     ):
         part = XmlPart.load(partname_, content_type_, blob_, package_)
 
         parse_xml_.assert_called_once_with(blob_)
-        __init_.assert_called_once_with(ANY, partname_, content_type_, element_, package_)
+        XmlPart__init_.assert_called_once_with(ANY, partname_, content_type_, element_, package_)
         assert isinstance(part, XmlPart)
 
     def it_can_serialize_to_xml(self, blob_fixture):
@@ -399,7 +399,7 @@ class DescribeXmlPart:
         return instance_mock(request, BaseOxmlElement)
 
     @pytest.fixture
-    def __init_(self, request):
+    def XmlPart__init_(self, request):
         return initializer_mock(request, XmlPart)
 
     @pytest.fixture

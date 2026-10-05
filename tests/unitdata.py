@@ -9,6 +9,11 @@ class BaseBuilder:
     Provides common behavior for all data builders.
     """
 
+    # -- defined by each builder class --
+    __attrs__: tuple[str, ...]
+    __nspfxs__: tuple[str, ...]
+    __tag__: str
+
     def __init__(self):
         self._empty = False
         self._nsdecls = ""

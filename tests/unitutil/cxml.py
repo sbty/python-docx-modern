@@ -4,6 +4,8 @@ CXEL is a compact XML specification language I made up that's useful for produci
 element trees suitable for unit testing.
 """
 
+from typing import cast
+
 from pyparsing import (
     Combine,
     Forward,
@@ -37,7 +39,7 @@ def element(cxel_str: str):
 def xml(cxel_str: str) -> str:
     """Return the XML generated from `cxel_str`."""
     root_token = root_node.parseString(cxel_str)
-    xml = root_token.element.xml
+    xml: str = cast("Element", root_token.element).xml
     return xml
 
 
@@ -260,7 +262,7 @@ def grammar():
         element("element") + Group(Optional(slash + child_node_list))("child_node_list")
     ).setParseAction(connect_node_children)
 
-    child_node_list << (open_paren + delimitedList(node) + close_paren | node)
+    child_node_list <<= open_paren + delimitedList(node) + close_paren | node
 
     root_node = (
         element("element") + Group(Optional(slash + child_node_list))("child_node_list") + stringEnd

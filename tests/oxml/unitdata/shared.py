@@ -5,7 +5,7 @@ from ...unitdata import BaseBuilder
 
 class CT_OnOffBuilder(BaseBuilder):
     __nspfxs__ = ("w",)
-    __attrs__ = "w:val"
+    __attrs__ = ("w:val",)
 
     def __init__(self, tag):
         self.__tag__ = tag

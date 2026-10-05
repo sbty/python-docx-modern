@@ -74,7 +74,7 @@ class DescribeImagePart:
             content_type = CT.PNG
             image_part = ImagePart.load(partname, content_type, image.blob, None)
         # case 2: image part is newly created from image file
-        elif request.param == "new":
+        else:
             image_part = ImagePart.from_image(image, None)
 
         return image_part, expected_cx, expected_cy
@@ -85,7 +85,7 @@ class DescribeImagePart:
         if request.param == "loaded":
             image_part = ImagePart(partname, None, None, None)
             expected_filename = "image.png"
-        elif request.param == "new":
+        else:  # -- "new" --
             image_.filename = "foobar.PXG"
             image_part = ImagePart(partname, None, None, image_)
             expected_filename = image_.filename

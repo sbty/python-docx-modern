@@ -1,5 +1,7 @@
 """Test suite for docx.oxml.xmlchemy."""
 
+from typing import cast
+
 import pytest
 
 from docx.oxml.exceptions import InvalidXmlError
@@ -428,7 +430,9 @@ class DescribeOptionalAttribute:
         assert parent.xml == expected_xml
 
     def it_adds_a_docstring_for_the_property(self):
-        assert CT_Parent.optAttr.__doc__.startswith("ST_IntegerType type-converted value of ")
+        docstring = CT_Parent.optAttr.__doc__
+        assert docstring is not None
+        assert docstring.startswith("ST_IntegerType type-converted value of ")
 
     # fixtures -------------------------------------------------------
 
@@ -459,10 +463,12 @@ class DescribeRequiredAttribute:
         assert parent.xml == expected_xml
 
     def it_adds_a_docstring_for_the_property(self):
-        assert CT_Parent.reqAttr.__doc__.startswith("ST_IntegerType type-converted value of ")
+        docstring = CT_Parent.reqAttr.__doc__
+        assert docstring is not None
+        assert docstring.startswith("ST_IntegerType type-converted value of ")
 
     def it_raises_on_get_when_attribute_not_present(self):
-        parent = a_parent().with_nsdecls().element
+        parent = cast(CT_Parent, a_parent().with_nsdecls().element)
         with pytest.raises(InvalidXmlError):
             parent.reqAttr
 
