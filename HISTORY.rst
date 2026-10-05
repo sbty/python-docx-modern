@@ -44,6 +44,9 @@ Unreleased (python-docx-modern fork)
 - Typing: `DocumentPart.get_style()` / `StoryPart.get_style()` are annotated
   `BaseStyle | None` (they return None when no default style exists) and
   `StylesPart.default()` takes a `docx.package.Package`; runtime behavior is unchanged
+- Remove `docx.enum.base.DocsPageFormatter`, unused since enumerations were reworked
+  onto `enum.Enum` (it required an `__ms_name__` no enumeration defines, so it always
+  raised KeyError)
 - Require Python 3.10+; lower lxml minimum to 4.9.0
 - Build with hatchling instead of setuptools; type the whole `docx` package and check
   it with mypy and pyright in strict mode

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import enum
-import textwrap
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 if TYPE_CHECKING:
@@ -77,77 +76,3 @@ class BaseXmlEnum(int, enum.Enum):
         if not member_xml_value:
             raise ValueError(f"{cls.__name__}.{member.name} has no XML representation")
         return member_xml_value
-
-
-class DocsPageFormatter:
-    """Generate an .rst doc page for an enumeration.
-
-    Formats a RestructuredText documention page (string) for the enumeration class parts
-    passed to the constructor. An immutable one-shot service object.
-    """
-
-    def __init__(self, clsname: str, clsdict: dict[str, Any]) -> None:
-        self._clsname = clsname
-        self._clsdict = clsdict
-
-    @property
-    def page_str(self) -> str:
-        """The RestructuredText documentation page for the enumeration.
-
-        This is the only API member for the class.
-        """
-        tmpl = ".. _%s:\n\n%s\n\n%s\n\n----\n\n%s"
-        components = (
-            self._ms_name,
-            self._page_title,
-            self._intro_text,
-            self._member_defs,
-        )
-        return tmpl % components
-
-    @property
-    def _intro_text(self) -> str:
-        """Docstring of the enumeration, formatted for documentation page."""
-        try:
-            cls_docstring = self._clsdict["__doc__"]
-        except KeyError:
-            cls_docstring = ""
-
-        if cls_docstring is None:
-            return ""
-
-        return textwrap.dedent(cls_docstring).strip()
-
-    def _member_def(self, member: BaseEnum | BaseXmlEnum) -> str:
-        """Return an individual member definition formatted as an RST glossary entry,
-        wrapped to fit within 78 columns."""
-        assert member.__doc__ is not None
-        member_docstring = textwrap.dedent(member.__doc__).strip()
-        member_docstring = textwrap.fill(
-            member_docstring,
-            width=78,
-            initial_indent=" " * 4,
-            subsequent_indent=" " * 4,
-        )
-        return f"{member.name}\n{member_docstring}\n"
-
-    @property
-    def _member_defs(self) -> str:
-        """A single string containing the aggregated member definitions section of the
-        documentation page."""
-        members = self._clsdict["__members__"]
-        member_defs = [self._member_def(member) for member in members if member.name is not None]
-        return "\n".join(member_defs)
-
-    @property
-    def _ms_name(self) -> str:
-        """The Microsoft API name for this enumeration."""
-        ms_name: str = self._clsdict["__ms_name__"]
-        return ms_name
-
-    @property
-    def _page_title(self) -> str:
-        """The title for the documentation page, formatted as code (surrounded in
-        double-backtics) and underlined with '=' characters."""
-        title_underscore = "=" * (len(self._clsname) + 4)
-        return f"``{self._clsname}``\n{title_underscore}"
