@@ -49,10 +49,10 @@ dev = [
 ]
 
 [project.urls]
-Changelog = "https://github.com/python-openxml/python-docx/blob/master/HISTORY.rst"
+Changelog = "https://github.com/sbty/python-docx-modern/blob/modernize/HISTORY.rst"
 Documentation = "https://python-docx.readthedocs.org/en/latest/"
-Homepage = "https://github.com/python-openxml/python-docx"
-Repository = "https://github.com/python-openxml/python-docx"
+Homepage = "https://github.com/sbty/python-docx-modern"
+Repository = "https://github.com/sbty/python-docx-modern"
 
 [tool.pyright]
 include = ["src/docx", "tests"]
